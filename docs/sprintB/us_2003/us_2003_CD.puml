@@ -1,0 +1,65 @@
+@startuml
+'https://plantuml.com/class-diagram
+title List Teacher's Course Exams
+top to bottom direction
+skinparam linetype ortho
+
+package Teacher {
+    class Teacher <<root>> {
+        + courses() : Iterable<Course>
+    }
+}
+
+package Exam {
+    class Exam <<root>>
+}
+
+package Course {
+    class Course <<root>>
+}
+
+package repositories {
+    interface TeacherRepository{
+        + findById() : Optional<Teacher>
+    }
+
+    interface ExamRepository{
+        + findByCourse() : Iterable<Exam>
+    }
+}
+
+package infraestructure.persistence {
+    class PersistenceContext {
+    + repositories : RepositoryFactory
+    }
+
+    interface RepositoryFactory {
+        + teachers() : TeacherRepository
+        + exams() : ExamRepository
+    }
+}
+
+class ListCourseExamsUI <<presentation>>
+
+class ListCourseExamsController <<application>> {
+    + listCourses() : Iterable<Course>
+    + listCourseExams() : Iterable<Exam>
+}
+
+ListCourseExamsUI ..> ListCourseExamsController
+ListCourseExamsUI ..> Exam.Exam
+ListCourseExamsUI ..> Course.Course
+ListCourseExamsController ..> PersistenceContext
+ListCourseExamsController ..> RepositoryFactory
+ListCourseExamsController ..> TeacherRepository
+ListCourseExamsController ..> ExamRepository
+ListCourseExamsController ..> Teacher.Teacher
+Teacher.Teacher --> Course.Course
+Exam.Exam --> Course.Course
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> TeacherRepository
+RepositoryFactory --> ExamRepository
+TeacherRepository --> Teacher.Teacher
+ExamRepository --> Exam.Exam
+
+@enduml

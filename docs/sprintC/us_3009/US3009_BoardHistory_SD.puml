@@ -1,0 +1,142 @@
+@startuml
+'http://plantuml.com/skinparam.html
+
+'skinparam monochrome true
+'skinparam packageStyle rect
+'skinparam defaultFontName FG Virgil
+'skinparam shadowing false
+
+'actor User as Actor
+'participant ViewUpdatesdUI as UI <<presentation>>
+'participant ViewUpdatesController as Controller <<application>>
+'participant PersistenceContext as Persistence <<persistence>>
+'participant RepositoryFactory as Factory <<factory>>
+'database BoardRepository as Repository <<repository>>
+'database UpdateRepository as Repository2 <<repository>>
+
+'Actor --> UI: view board's update history
+'activate UI
+ '   UI -> Controller: create
+  '  UI-> Controller: listUserBoards()
+   ' note right of UI: gets the user that is logged in
+    'activate Controller
+    'Controller -> Persistence: repositories()
+     '       activate Persistence
+      '          note right of Persistence: pode criar repositório em memória ou JPA
+       '         Persistence -> Factory: create
+        '        Persistence -> Controller: factory
+         '   deactivate Persistence
+
+          '  Controller -> Factory: boards()
+           ' activate Factory
+            '    Factory -> Repository: create
+             '   Factory -> Controller: boardRepository
+            'deactivate Factory
+           ' Controller -> Repository: findByOwner(email)
+            'activate Repository
+             '   Repository -> Controller: ownedBoards
+            'deactivate Repository
+            'Controller -> UI: ownedBoards
+            'deactivate Controller
+   ' UI--> Actor: ask for board to show history
+    'Actor --> UI: board
+    'UI -> Controller: listBoardHistory(board)
+   ' activate Controller
+    ' Controller -> Persistence: repositories()
+    '            activate Persistence
+     '               note right of Persistence: pode criar repositório em memória ou JPA
+     '               Persistence -> Factory: create
+      '              Persistence -> Controller: factory
+       '         deactivate Persistence
+
+        '        Controller -> Factory: updates()
+         '       activate Factory
+          '          Factory -> Repository2: create
+           '         Factory -> Controller: updateRepository
+            '    deactivate Factory
+
+    'Controller -> Repository2: findByBoard(boardID)
+    'activate Repository2
+  '  Repository2 -> Controller: updates
+   ' deactivate Repository2
+'    Controller -> UI: updates
+ '   deactivate Controller
+  '  UI -> UI: doShow
+  ' UI -> Actor: confirm operation success
+
+'deactivate UI
+skinparam BoxPadding 30
+autonumber
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor User as Actor
+
+box ECourse TCP Client App
+participant ViewUpdatesUI as UI <<presentation>>
+participant "ViewUpdates\nTCPClientController" as ClientController <<TCP Client Controller>>
+end box
+
+box ECourse TCP Server App
+participant "ViewUpdates\nTCPServerController" as ServerController <<TCP Server Controller>>
+participant ViewUpdatesController as DomainCTRL <<application>>
+participant ShareBoardService as Service <<service>>
+database BoardRepository as Repository <<repository>>
+end box
+
+Actor --> UI: select option "View Board History"
+activate UI
+UI -> ClientController: create
+UI -> ClientController: listUserBoards()
+activate ClientController
+ClientController --> ServerController: TCP connection
+    activate ServerController
+    note right of ServerController
+        verify if the user is logged in and retrieve the email, using the sessionManager
+    end note
+ServerController -> DomainCTRL:listUserBoards(email)
+activate DomainCTRL
+DomainCTRL -> Service: userBoards(email)
+activate Service
+Service -> Repository: findByEmail(email)
+activate Repository
+Repository -> Service: Iterable<Board>
+deactivate Repository
+Service -> DomainCTRL: Iterable<Board>
+deactivate Service
+DomainCTRL --> ServerController: Iterable<Board>
+deactivate DomainCTRL
+ServerController --> ClientController: TCP Connection
+deactivate ServerController
+ClientController -> UI: list of boards
+deactivate ClientController
+UI --> Actor: ask for board to view History
+Actor --> UI: boardTitle
+UI -> ClientController: listBoardHistory(boardTitle)
+activate ClientController
+ClientController --> ServerController: TCP connection
+activate ServerController
+note right of ServerController
+    verify if the user is logged in and retrieve the email, using the sessionManager
+end note
+ServerController -> DomainCTRL:listBoardHistory(boardTitle)
+activate DomainCTRL
+DomainCTRL-> Repository: findByTitle(boardTitle)
+activate Repository
+Repository-> DomainCTRL: Board
+deactivate Repository
+DomainCTRL-> ServerController: Iterable<Update>
+deactivate DomainCTRL
+ServerController -> ClientController: TCP Connection
+deactivate ServerController
+ClientController -> UI: Iterable<Update>
+deactivate ClientController
+UI --> Actor: operation success
+
+
+
+
+@enduml

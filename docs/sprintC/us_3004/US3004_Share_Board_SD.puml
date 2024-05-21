@@ -1,0 +1,114 @@
+@startuml
+'http://plantuml.com/skinparam.html
+skinparam BoxPadding 30
+autonumber
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor User as Actor
+
+box ECourse TCP Client App
+participant ShareBoardUI as UI <<presentation>>
+participant "ShareBoard\nTCPClientController" as ClientController <<TCP Client Controller>>
+end box
+
+box ECourse TCP Server App
+participant "ShareBoard\nTCPServerController" as ServerController <<TCP Server Controller>>
+participant ShareBoardController as DomainCTRL <<application>>
+database BoardShareRepository as Repository2 <<repository>>
+participant BoardShare as Domain <<domain>>
+database BoardRepository as Repository <<repository>>
+database StudentRepository as Repository3 <<repository>>
+database TeacherRepository as Repository4 <<repository>>
+end box
+
+
+
+
+
+
+
+Actor --> UI: select option "Share a board"
+activate UI
+    UI -> ClientController: create
+    UI-> ClientController: listActiveBoards()
+    activate ClientController
+    ClientController --> ServerController: TCP connection
+    activate ServerController
+    note right of ServerController
+        verify if the user is logged in and retrieve the email, using the sessionManager
+    end note
+    ServerController -> DomainCTRL: listActiveBoards(email)
+    activate DomainCTRL
+    DomainCTRL -> Repository: findActiveByOwner(email)
+    activate Repository
+    Repository --> DomainCTRL: Iterable<Board>
+    deactivate Repository
+
+    DomainCTRL --> ServerController: Iterable<Board>
+    deactivate DomainCTRL
+    ServerController --> ClientController: TCP connection
+    deactivate ServerController
+    ClientController -> UI: active boards
+    deactivate ClientController
+    UI--> Actor: ask for board to share, email and user permissions
+    Actor --> UI:  selected board,email, user permissions
+    UI -> ClientController: shareBoard(board,email,permissions)
+    activate ClientController
+
+    ClientController --> ServerController: TCP connection
+    activate ServerController
+    note right of ServerController
+        verify if the user is logged in and retrieve the email, using the sessionManager
+    end note
+    ServerController -> DomainCTRL: shareBoard(boardTitle,email,userPermission)
+
+    activate DomainCTRL
+    DomainCTRL -> Repository: findByTitle(boardTitle)
+    activate Repository
+    Repository --> DomainCTRL: Board
+    deactivate Repository
+    note  over DomainCTRL
+    Search for the owner in student repository
+
+    end note
+    DomainCTRL -> Repository3: findByEmail(email)
+    activate Repository3
+    Repository3 --> DomainCTRL: Optional<Student>
+    deactivate Repository3
+      note  over DomainCTRL
+        If it was no match in student repository, search for the owner in teacher repository
+
+        end note
+    DomainCTRL -> Repository4: findByEmail(email)
+    activate Repository4
+    Repository4 --> DomainCTRL: Optional<Teacher>
+    deactivate Repository4
+    DomainCTRL -> Domain: create(userPermission,board,email)
+    activate Domain
+    Domain --> DomainCTRL: BoardShare
+    deactivate Domain
+    DomainCTRL -> Repository2: save(boardShare)
+    activate Repository2
+    Repository2 --> DomainCTRL: BoardShare
+    deactivate Repository2
+    DomainCTRL --> ServerController: BoardShare
+    deactivate DomainCTRL
+    ServerController --> ClientController: TCP connection
+    deactivate ServerController
+    ClientController --> UI: success
+    deactivate ClientController
+    UI -> Actor: show success
+
+
+
+
+
+
+
+
+deactivate UI
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "Student" as ST
+
+activate ST
+ST -> ":System" : selects option "Request enrollment"
+activate ":System"
+":System" --> ST : shows available courses
+deactivate ":System"
+ST -> ":System" : selects course
+activate ":System"
+":System"--> ST : informs operations success
+deactivate ST
+
+@enduml

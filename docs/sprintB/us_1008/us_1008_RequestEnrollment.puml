@@ -1,0 +1,69 @@
+@startuml
+title SD - Request Enrollment in Course
+
+actor Student as ST
+participant EnrollmentUI as UI  <<presentation>>
+participant EnrollmentController as CTRL  <<application>>
+database CourseRepository as repoCourse  <<database>>
+participant Course as course  <<domain>>
+database StudentRepository as repoStudent  <<database>>
+participant Student as student  <<domain>>
+database EnrollmentRepository as repoEnrollment  <<database>>
+participant Enrollment as enrollment  <<domain>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+activate ST
+ST -> UI: selects option "Request enrollment"
+activate UI
+UI -> CTRL: create()
+activate CTRL
+CTRL -> Context: repositories()
+activate Context
+Context --> CTRL: RepositoryFactory
+deactivate Context
+CTRL -> Factory: courses()
+activate Factory
+Factory --> CTRL: CourseRepository
+deactivate Factory
+CTRL -> Factory: students()
+activate Factory
+Factory --> CTRL: StudentRepository
+deactivate Factory
+CTRL -> Factory: enrollments()
+activate Factory
+Factory --> CTRL: EnrollmentRepository
+deactivate Factory
+CTRL -> repoCourse: listAvailableCourses()
+activate repoCourse
+repoCourse --> CTRL: available courses
+deactivate repoCourse
+CTRL --> UI: available courses
+deactivate CTRL
+UI --> ST: shows available courses
+
+
+ST -> UI: selects a course
+UI -> CTRL: requestEnrollment(course)
+activate CTRL
+CTRL -> repoCourse: findCourse(courseId)
+activate repoCourse
+repoCourse --> CTRL: course
+deactivate repoCourse
+CTRL -> repoStudent: findStudent(studentId)
+activate repoStudent
+repoStudent --> CTRL: student
+deactivate repoStudent
+CTRL -> enrollment: addApplication(student)
+activate enrollment
+enrollment --> CTRL: enrollment
+deactivate enrollment
+CTRL -> repoEnrollment: saveEnrollment(enrollment)
+activate repoEnrollment
+repoEnrollment --> CTRL
+deactivate repoEnrollment
+CTRL --> UI
+deactivate CTRL
+UI --> ST: informs operations success
+deactivate UI
+deactivate ST
+@enduml

@@ -1,0 +1,91 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam handwritten true
+skinparam monochrome true
+title SD - Create Post-It
+actor User as user
+participant ":CreatePostItUI" as ui
+participant ":CreatePostItTCPController" as tcpCtrl
+participant ":TcpSharedBoardServerThread" as tcpServer
+participant ":CreatePostItServerTCPController" as tcpServerCtrl
+participant ":CreatePostItController" as ctrl
+participant ":SharedBoardController" as ctrlSharedBoard
+database ":BoardSharedRepository" as boardSharedRepo
+participant ":PosIt" as postIt
+database ":BoardRepository" as boardRepository
+participant ":Board" as board
+participant ":EventPublisher" as pub
+
+activate user
+   user -> ui: select create postIt option
+    activate ui
+        ui -> tcpCtrl: listUserBoardsShared()
+        activate tcpCtrl
+            tcpCtrl -> tcpServer: mf.sendMessage(version,code,data,sessionID)
+                activate tcpServer
+                    tcpServer -> tcpServerCtrl:listUserBoardsShared(message)
+                    activate tcpServerCtrl
+                        tcpServerCtrl -> ctrl: listUserBoardsShared()
+                            activate ctrl
+                            ctrl -> ctrlSharedBoard: listUserBoardsShared()
+                                activate ctrlSharedBoard
+                                    ctrlSharedBoard -> boardSharedRepo: findBoardsWithWritePermission(emailAddress)
+                                        activate boardSharedRepo
+                                            boardSharedRepo --> ctrlSharedBoard: boards  user  can write
+                                        deactivate boardSharedRepo
+                                    ctrlSharedBoard --> ctrl: boards  user  can write
+                                deactivate ctrlSharedBoard
+                               ctrl --> tcpServerCtrl: boards  user  can write
+                            deactivate ctrl
+                        tcpServerCtrl --> tcpServer: board user can write
+                    deactivate tcpServerCtrl
+                tcpServer --> tcpCtrl: sendMessage(VERSION, MessageCodesTCP.ACK, boardsShared)
+                deactivate tcpServer
+            tcpCtrl --> ui: board user can write
+        deactivate tcpCtrl
+        ui --> user: Ask to select one of the boards
+        user -> ui: select a board
+        ui --> user: Ask to insert the line where the user want to create the post-it
+        user -> ui: insert line
+        ui --> user: Ask to insert the column where the user want to create the post-it
+        user -> ui: insert column
+        ui --> user: Ask to select one of the available types of content
+        user -> ui: select content type
+        ui --> user: Ask to insert the content
+        user -> ui: insert content
+
+        ui -> tcpCtrl:createPostIt(contentType + "\0" + title + "\0" + row + "\0" + column, contentType, content)
+            activate tcpCtrl
+                tcpCtrl -> tcpServer: sendMessage(VERSION,MessageCodesTCP.CREATE_POSTIT,input,TcpSharedBoardClientApp.sessionID);
+                    activate tcpServer
+                        tcpServer --> tcpCtrl: sendMessage(VERSION, MessageCodesTCP.ACK, "")
+                        tcpCtrl ->tcpServer: sendBigMessage(VERSION,MessageCodesTCP.CREATE_POSTIT,contentBytes)
+                        tcpServer -> tcpServerCtrl: createPostIt(contentType, content.data(), boardTitle, row, column, message.sessionID());
+                        activate tcpServerCtrl
+                            tcpServerCtrl --> ctrl: createPostIt(contentType, content, boardTitle, row, column);
+                            activate ctrl
+                                ctrl -> postIt: Post-It(content,owner);
+                                activate postIt
+                                    postIt --> ctrl: newPostIt
+                                deactivate postIt
+                                ctrl -> boardRepository: findByTitle(boardTitle)
+                                activate boardRepository
+                                    boardRepository --> ctrl: board
+                                deactivate boardRepository
+                                ctrl -> board: add(newPostIt,row,column)
+                                ctrl -> boardRepository: save(board)
+                                ctrl -> pub :publish(boardUpdateEvent,pair(row,column))
+                            ctrl --> tcpServerCtrl: newPostIt
+                            deactivate ctrl
+                        tcpServerCtrl --> tcpServer
+                        deactivate tcpServerCtrl
+                    tcpServer --> tcpCtrl: sendBigMessage(VERSION, MessageCodesTCP.ACK, postIt)
+                    deactivate tcpServer
+                tcpCtrl --> ui: newPostIt
+                deactivate tcpCtrl
+            ui --> user: Successs
+            deactivate ui
+        deactivate user
+@enduml

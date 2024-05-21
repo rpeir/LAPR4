@@ -1,0 +1,16 @@
+@startuml
+autonumber
+actor "Teacher" as TC
+
+activate TC
+TC -> ":System" : selects option "List Course Grades"
+activate ":System"
+":System" --> TC : shows list of courses the teacher is teaching
+deactivate ":System"
+TC -> ":System" : selects a course
+activate ":System"
+":System" --> TC : shows list of students in the course and their exam grades
+deactivate ":System"
+deactivate TC
+
+@enduml

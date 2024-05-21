@@ -1,0 +1,81 @@
+@startuml
+
+package infrastructure {
+  package persistence {
+    class PersistenceContext {
+      +repositories(): RepositoryFactory
+    }
+  }
+}
+
+package repositories {
+  interface StudentRepository {
+    +findById(studentId: String): Student
+  }
+
+  interface CourseRepository {
+    +findById(courseId: String): Course
+  }
+
+  interface ExamRepository {
+    +findByCourse(course: Course): Iterable<Exam>
+  }
+
+  interface CourseEnrollmentRepository {
+    +findAcceptedApplicationByStudent(student: Student): Iterable<CourseEnrollments>
+  }
+}
+
+package domain {
+  class Student {
+    +findById(studentId: String): Student
+  }
+
+  class Course {
+    +getId(): String
+  }
+
+  class Exam {
+    +getDescription(): String
+  }
+
+  class CourseEnrollments {
+  }
+}
+
+package presentation {
+  class ListFutureExamsUI {
+    +create(): void
+    +showExams(exams: Iterable<Exam>): void
+  }
+}
+
+package application {
+  class ListFutureExamsController {
+    +repositories(): RepositoryFactory
+    +findStudentCourses(studentId: String): void
+  }
+}
+
+package factory {
+  class RepositoryFactory {
+    +students(): repositories.StudentRepository
+    +exams(): repositories.ExamRepository
+    +courseEnrollments(): repositories.CourseEnrollmentRepository
+  }
+}
+
+infrastructure.persistence.PersistenceContext --> factory.RepositoryFactory
+repositories.StudentRepository <|.. domain.Student
+repositories.CourseRepository <|.. domain.Course
+repositories.ExamRepository <|.. domain.Exam
+repositories.CourseEnrollmentRepository <|.. domain.CourseEnrollments
+application.ListFutureExamsController --> infrastructure.persistence.PersistenceContext
+application.ListFutureExamsController --> factory.RepositoryFactory
+application.ListFutureExamsController --> repositories.StudentRepository
+application.ListFutureExamsController --> repositories.CourseEnrollmentRepository
+application.ListFutureExamsController --> repositories.CourseRepository
+application.ListFutureExamsController --> repositories.ExamRepository
+presentation.ListFutureExamsUI --> application.ListFutureExamsController
+
+@enduml

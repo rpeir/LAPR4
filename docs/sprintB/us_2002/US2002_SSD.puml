@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Student" as ST
+
+activate ST
+ST -> ":System" : selects option "List Future Exams"
+activate ":System"
+":System" --> ST : shows list of future exams
+deactivate ":System"
+deactivate ST
+
+@enduml

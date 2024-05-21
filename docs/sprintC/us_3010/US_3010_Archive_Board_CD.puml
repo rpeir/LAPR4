@@ -1,0 +1,87 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Archive Board
+top to bottom direction
+skinparam linetype ortho
+
+
+
+package Board {
+class ArchiveBoardController << application >> {
+      + listActiveBoards(EmailAddress): Iterable<Board>
+      + archive(String):Board
+    }
+    class Board << root >>{
+      - id: long
+      - title: String
+      - state : State
+      - postIts: Map<Pair<Integer, Integer>, PostIt>
+      + board_title(): String
+      + history(): List<Update>
+      + addPostIt(PostIt, int, int): void
+      + removePostIt(int, int): PostIt
+      + postIts(): Map<Pair<Integer, Integer>, PostIt>
+      + identity(): Long
+      + id(): Long
+      + isActive(): boolean
+      + getPostIt(int, int): PostIt
+      + isFree(int, int): boolean
+    }
+    interface BoardRepository << persistence >> {
+      + findActiveByOwner(EmailAddress): Optional<Board>
+      + save(Board): Board
+    }
+}
+
+package TCP.common {
+    class MessageCodesTCP {
+      + ACTIVE_BOARDS: int
+      + ARCHIVE_BOARD: int
+    }
+
+    class MessageFormatTCP {
+      + sendMessage(int, int, byte[]): void
+      + sendMessage(int, int, byte[], Long): void
+      + sendMessage(int, int, String): void
+      + sendMessage(int, int, String, Long): void
+      + readMessage(): MessageTCP
+    }
+
+    class MessageTCP {
+      + sessionID(): long
+      + data(): byte[]
+      + code(): int
+    }
+}
+package TCP.server {
+    class ArchiveBoardTCPServerController << TCP Server Controller >> {
+      + listActiveBoards(MessageTCP): String
+      + archiveBoard(MessageTCP): void
+    }
+}
+
+package TCP.client {
+    class ArchiveBoardTCPClientController << TCP Client Controller >> {
+      + listActiveBoards(): Iterable<String>
+      + archiveBoard(String): void
+    }
+
+    class ArchiveBoardUI << presentation >> {
+    }
+}
+
+
+
+ArchiveBoardController ..> BoardRepository
+ArchiveBoardUI --> ArchiveBoardTCPClientController
+TCP.client ..> TCP.common
+TCP.server ..> TCP.common
+MessageFormatTCP ..> MessageTCP
+MessageFormatTCP ..> MessageCodesTCP
+BoardRepository --> Board.Board
+ArchiveBoardTCPServerController ..>ArchiveBoardController
+
+
+
+
+@enduml

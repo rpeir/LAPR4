@@ -1,0 +1,120 @@
+@startuml
+autonumber
+title SD - Change PostIt - Delete
+
+actor eCourseUser as USER
+participant ChangePostItUI as UI <<presentation>>
+participant ChangePostItTCPController as TCPCTRL <<controller>>
+participant "mf:MessageFormatTCP" as mf <<external>>
+participant MessageTCP as TCP <<external>>
+participant TcpSharedBoardServerThread as Thread <<thread>>
+participant ChangePostItServerTCPController as TCPSVCTRL <<controller>>
+participant ChangePostItController as CTRL <<controller>>
+database BoardSharedRepository as boardSharedRepo <<database>>
+database BoardRepository as boardRepo <<database>>
+participant EventPublisher as Publisher <<external>>
+participant BoardUpdateEvent as Event <<external>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+participant ECourseUser as User <<domain>>
+participant BoardShared as BoardShared <<domain>>
+participant PostIt as PostIt <<domain>>
+participant ":Board" as board <<domain>>
+
+activate USER
+USER -> UI: selects option "Change PostIt"
+activate UI
+UI --> TCPCTRL: create(socket: Socket)
+activate TCPCTRL
+TCPCTRL --> mf: create(socket: Socket)
+deactivate TCPCTRL
+UI -> TCPCTRL: listBoardsWithWritePermission(): Iterable<String>
+activate TCPCTRL
+TCPCTRL -> mf: sendMessage(version, BOARDS_WRITE,, sessionID)
+activate mf
+Thread -> mf: MessageTCP message = mf.readMessage()
+deactivate mf
+activate Thread
+Thread -> TCPSVCTRL: String boardsWrite = listBoardsWithWritePermission(message)
+activate TCPSVCTRL
+TCPSVCTRL --> CTRL : create()
+activate CTRL
+CTRL -> Context: repositories()
+activate Context
+Context --> CTRL: RepositoryFactory
+deactivate Context
+CTRL -> Factory: boardShared()
+activate Factory
+Factory --> CTRL: boardSharedRepository
+deactivate Factory
+CTRL -> Factory: boards()
+activate Factory
+Factory --> CTRL: BoardRepository
+deactivate Factory
+deactivate CTRL
+TCPSVCTRL -> CTRL: listBoardsWithWritePermission(): Iterable<Board>
+activate CTRL
+CTRL -> boardSharedRepo: findBoardsWithWritePermission(userEmail: String): Iterable<SharedBoard>
+activate boardSharedRepo
+boardSharedRepo --> CTRL : Iterable<SharedBoard>
+note over CTRL: for each SharedBoard get Board and add to Iterable
+deactivate boardSharedRepo
+CTRL --> TCPSVCTRL: Iterable<Board>
+deactivate CTRL
+TCPSVCTRL --> Thread: String boardsWrite
+deactivate TCPSVCTRL
+Thread -> mf: sendMessage(version, ACK, boardsWrite)
+deactivate Thread
+activate mf
+mf -> TCPCTRL: MessageTCP result = mf.readMessage()
+deactivate mf
+TCPCTRL -> UI: Iterable<String> boardsWrite
+deactivate TCPCTRL
+UI --> USER: shows list of boards that the User can Change
+USER -> UI: selects board
+UI --> USER: shows list of change options (Move, Edit, Delete)
+USER -> UI: selects option "Delete"
+UI --> USER: asks for the postIt position (row, column)
+USER -> UI: inputs position
+UI -> TCPCTRL: deletePostIt(board: String,row4: int,column4: int)
+activate TCPCTRL
+TCPCTRL -> mf: sendMessage(version, DELETE_POSTIT, board + row4 + column4, sessionID)
+activate mf
+Thread -> mf: MessageTCP message = mf.readMessage()
+deactivate mf
+activate Thread
+Thread -> TCPSVCTRL: deletePostIt(board: String,row4: int,column4: int, message)
+activate TCPSVCTRL
+TCPSVCTRL -> CTRL : deletePostIt(session: EmailAddress, board: String,row4: int,column4: int)
+activate CTRL
+CTRL -> boardRepo: findByTitle(board: String): Board
+activate boardRepo
+boardRepo --> CTRL : board
+deactivate boardRepo
+CTRL -> board: PostIt postIt = getPostIt(row4: int,column4: int)
+activate board
+board --> CTRL : PostIt
+deactivate board
+CTRL -> board: removePostIt(row4: int,column4: int)
+activate board
+board --> CTRL :
+deactivate board
+CTRL -> Publisher: publish(new BoardUpdateEvent)
+activate Publisher
+note over Publisher: created new BoardUpdateEvent(savedBoard, savedPostIt, Calendar.getInstance(), CellUpdateType.DELETE, new Pair<>(row4, column4), new Pair<>(row4, column4))) that will be handled by the BoardUpdateHandler
+deactivate Publisher
+CTRL --> TCPSVCTRL:
+deactivate CTRL
+TCPSVCTRL --> Thread:
+deactivate TCPSVCTRL
+Thread -> mf: sendMessage(version, ACK)
+deactivate Thread
+activate mf
+TCPCTRL -> mf: MessageTCP result = mf.readMessage()
+deactivate mf
+TCPCTRL --> UI:
+deactivate TCPCTRL
+UI --> USER: shows the confirmation message
+
+
+@enduml

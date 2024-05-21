@@ -1,0 +1,31 @@
+@startuml
+skinparam handwritten true
+skinparam monochrome true
+autonumber
+title SD - As a teacher I want to list all the available courses
+actor Teacher
+participant ":ListAvailableCoursesUI" as ui
+participant ":ListAvailableCoursesController" as ctrl
+participant ":ListCourseService" as svcCourse
+database ":CourseRepository" as repoCourse
+
+activate Teacher
+    Teacher -> ui: select list available courses option
+    activate ui
+        ui -> ctrl: availableCoursesTeacher(teacherId)
+        activate ctrl
+            ctrl -> svcCourse: availableCoursesTeacher(teacherId)
+            activate svcCourse
+                svcCourse -> repoCourse: availableCoursesTeacher(teacherId)
+                activate repoCourse
+                    repoCourse --> svcCourse: available courses
+                deactivate repoCourse
+                svcCourse --> ctrl: available courses
+            deactivate svcCourse
+            ctrl --> ui: available courses
+        deactivate ctrl
+        ui --> ui: output available courses
+        ui --> Teacher: back to menu
+        deactivate ui
+deactivate Teacher
+@enduml

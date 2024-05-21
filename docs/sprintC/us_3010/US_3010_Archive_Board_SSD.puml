@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "User" as MG
+
+activate MG
+MG -> ":System" : selects option "Archive Board"
+activate ":System"
+":System"--> MG : displays the list of owned active boards and ask for the board to archive
+deactivate ":System"
+MG -> ":System": selects the board to archive
+activate ":System"
+":System"--> MG : confirms operation success
+deactivate ":System"
+
+@enduml

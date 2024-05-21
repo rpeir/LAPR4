@@ -1,0 +1,137 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Board History
+top to bottom direction
+skinparam linetype ortho
+
+
+
+package Board {
+    class Board << root >>{
+      - id: long
+      - title: String
+      - state : State
+      - postIts: Map<Pair<Integer, Integer>, PostIt>
+      + board_title(): String
+      + history(): List<Update>
+      + addPostIt(PostIt, int, int): void
+      + removePostIt(int, int): PostIt
+      + postIts(): Map<Pair<Integer, Integer>, PostIt>
+      + identity(): Long
+      + id(): Long
+      + isActive(): boolean
+      + getPostIt(int, int): PostIt
+      + isFree(int, int): boolean
+    }
+    interface BoardRepository << persistence >> {
+      + findByTitle(String): Optional<Board>
+      + save(Board): Board
+    }
+}
+package BoardUpdate {
+class ViewUpdatesController << application >> {
+      + listUserBoards(EmailAddress): Iterable<Board>
+      + listBoardHistory(String): Iterable<Update>
+    }
+    class ShareBoardService << service >> {
+      + userBoards(EmailAddress): Iterable<Board>
+    }
+
+    class CellUpdate extends Update {
+      - initPosition: Pair<Integer, Integer>
+      - endPosition: Pair<Integer, Integer>
+      + toDTO(): UpdateDTO
+      + postIt(): PostIt
+      + content(): Content
+      + initPosition(): Pair<Integer, Integer>
+      + endPosition(): Pair<Integer, Integer>
+    }
+
+    enum CellUpdateType << enumeration >> {
+      + INSERT
+      + DELETE
+      + UPDATE
+      + MOVE
+    }
+
+    class Update << root >> {
+      - updateId: Long
+      - timeUpdate: Calendar
+      - user: ECourseUser
+      - undo: boolean
+      + identity(): Long
+      + undo(): void
+      + board(): Board
+      + timeUpdate(): Calendar
+      + isUndone(): boolean
+      + user(): ECourseUser
+    }
+
+    interface UpdateRepository << persistence >> {
+      + findLastTwoByBoardAndPosition(Long, int, int): List<Update>
+      + save(Update): Update
+    }
+
+}
+
+
+package TCP.common {
+    class MessageCodesTCP {
+     + BOARD_HISTORY: int
+     + UPDATE_ACTIVE_BOARDS: int
+    }
+
+    class MessageFormatTCP {
+      + sendMessage(int, int, byte[]): void
+      + sendMessage(int, int, byte[], Long): void
+      + sendMessage(int, int, String): void
+      + sendMessage(int, int, String, Long): void
+      + readMessage(): MessageTCP
+    }
+
+    class MessageTCP {
+      + sessionID(): long
+      + data(): byte[]
+      + code(): int
+    }
+}
+package TCP.server {
+    class ViewUpdatesTCPServerController << TCP Server Controller >> {
+      + listActiveBoards(MessageTCP): String
+      + listBoardUpdates(String, MessageTCP): byte[]
+    }
+}
+
+package TCP.client {
+    class ViewUpdatesTCPClientController << TCP Client Controller >> {
+      + listUserBoards(): Iterable<String>
+      + listBoardHistory(String): List<UpdateDTO>
+    }
+
+    class ViewUpdatesUI << presentation >> {
+    }
+}
+
+
+
+Board.Board "1" *--> Update
+BoardUpdate.CellUpdate "1" *--> BoardUpdate.CellUpdateType
+Update "1" *--> Board.Board
+ViewUpdatesController ..> BoardRepository
+ViewUpdatesUI --> ViewUpdatesTCPClientController
+TCP.client ..> TCP.common
+TCP.server ..> TCP.common
+MessageFormatTCP ..> MessageTCP
+MessageFormatTCP ..> MessageCodesTCP
+Board.Board --> PostIt.PostIt
+Board.Board --> Update
+ShareBoardService -> BoardRepository
+BoardRepository --> Board.Board
+ViewUpdatesTCPServerController ..> ViewUpdatesController
+ViewUpdatesController ..> ShareBoardService
+
+
+
+
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+autonumber
+actor "Manager" as MG
+
+activate MG
+MG -> ":System" : selects option "Approve/Reject Enlistment to a Course"
+activate ":System"
+":System" --> MG : shows pending requests
+deactivate ":System"
+MG -> ":System" : selects request
+activate ":System"
+":System"--> MG : shows possible options (accept or reject) and request details
+deactivate ":System"
+MG -> ":System": selects option
+activate ":System"
+":System"--> MG : informs operations success
+deactivate MG
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml
+left to right direction
+:Teacher: as Teacher
+:Student: as Student
+:Manager: as Manager
+:Team: as Team
+:User: as User
+
+(UC1001 - Register, disable/enable, and list users of the system) as (UC1001)
+(UC1002 - Create courses) as (UC1002)
+(UC1003 - Open and close enrollments in courses) as (UC1003)
+(UC1004 - Open and close courses) as (UC1004)
+(UC1005 - Set the teachers of a course) as (UC1005)
+(UC1006 - List all the courses that are available to me) as (UC1006)
+(UC1007 - Enroll students in bulk by importing their data using a csv file) as (UC1007)
+(UC1008 - Request my enrollment in a course) as (UC1008)
+(UC1009 - Approve or reject students applications to courses) as (UC1009)
+(UC1010 - Schedule a class) as (UC1010)
+(UC1011 - Schedule an extraordinary class) as (UC1011)
+(UC1012 - Update the schedule of a class) as (UC1012)
+(UC2001 - Create/update an exam) as (UC2001)
+(UC2002 - View a list of my future exams) as (UC2002)
+(UC2003 - View a list of all exams in a course) as (UC2003)
+(UC2007 - Add/update exam questions to a repository of exam questions to be used in automatic formative exams) as (UC2007)
+(UC2008 - Create/update automatic formative exams) as (UC2008)
+(UC3001 - Prepare the communication infrastruture for the Shared Boards and the depoyment of the solution) as (UC3001)
+(UC3002 - Create a board) as (UC3002)
+(UC3003 - Explore" the synchronization problems related to the shyncronization of shared boards and design a conceptual solution based on practical evidence. ) as (UC3003)
+(UC4001 - Schedule a meeting) as (UC4001)
+(UC5001 - Prepare a presentation) as (UC5001)
+
+
+
+
+
+
+Manager -- (UC1001)
+Manager -- (UC1002)
+Manager -- (UC1003)
+Manager -- (UC1004)
+Manager -- (UC1005)
+Manager -- (UC1007)
+Manager -- (UC1009)
+
+Teacher -- (UC1010)
+Teacher -- (UC1011)
+Teacher -- (UC1012)
+Teacher -- (UC2001)
+Teacher -- (UC2003)
+Teacher -- (UC2007)
+Teacher -- (UC2008)
+
+Student -- (UC1008)
+Student -- (UC2002)
+
+User -- (UC1006)
+User -- (UC3002)
+User -- (UC4001)
+
+
+Team -- (UC3001)
+Team -- (UC3003)
+Team -- (UC5001)
+@enduml
+```
+

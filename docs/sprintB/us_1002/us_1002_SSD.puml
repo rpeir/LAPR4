@@ -1,0 +1,14 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+title As a manager I want to create a course
+autonumber
+
+participant Manager
+participant System
+
+Manager -> System: Request to create a new course
+System --> Manager : Ask course information
+Manager -> System: Input course title, minimum number of students, maximum number of students, description
+System --> Manager: Confirm new course
+
+@enduml

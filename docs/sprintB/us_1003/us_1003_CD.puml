@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package persistence {
+  class PersistenceContext {
+    + repositories(): RepositoryFactory
+  }
+}
+
+package repositories {
+  interface CourseRepository {
+    + findCourse(courseId: String): Course
+    + saveCourse(course: Course): void
+  }
+}
+
+package domain {
+  class Course {
+    + setState(state: String): void
+  }
+}
+
+package presentation {
+  class SetEnrollmentStateUI {
+    + create(): void
+    + showCourses(courses: Iterable<Course>): void
+    + promptCourseSelection(): Course
+    + promptStateSelection(): String
+    + showOperationSuccess(): void
+  }
+}
+
+package application {
+  class SetEnrollmentStateController {
+    + create(): void
+    + repositories(): RepositoryFactory
+    + findCourse(courseId: String): Course
+    + setState(course: Course, state: String): void
+  }
+}
+
+package factory {
+  class RepositoryFactory {
+    + courses(): CourseRepository
+  }
+}
+
+persistence.PersistenceContext --> factory.RepositoryFactory
+repositories.CourseRepository <-- domain.Course
+application.SetEnrollmentStateController --> persistence.PersistenceContext
+application.SetEnrollmentStateController --> factory.RepositoryFactory
+application.SetEnrollmentStateController --> repositories.CourseRepository
+presentation.SetEnrollmentStateUI --> application.SetEnrollmentStateController
+
+@enduml

@@ -1,0 +1,148 @@
+@startuml
+'http://plantuml.com/skinparam.html
+'skinparam handwritten true
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor Admin as Actor
+participant RegisterSystemUserUI as UI <<presentation>>
+participant RegisterSystemUserController as Controller <<application>>
+participant UserManagementService as Service <<service>>
+participant StudentBuilder as BuilderStd <<builder>>
+participant TeacherBuilder as BuilderTch <<builder>>
+participant ManagerBuilder as BuilderMng <<builder>>
+participant "user:SystemUser" as Domain <<domain>>
+participant "student:Student" as DomainStudent <<domain>>
+participant "teacher:Teacher" as DomainTeacher <<domain>>
+participant PersistenceContext as Persistence <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+database UserRepository as Repository <<repository>>
+database StudentRepository as Repository2 <<repository>>
+database TeacherRepository as Repository3 <<repository>>
+
+Actor --> UI: Add User
+activate UI
+    UI -> Controller: create
+    UI --> Actor: Ask user information
+    Actor --> UI: Usernane, Password,\nFirst Name,\nLast Name, E-Mail
+
+
+        UI --> Actor: Show List\nof Roles
+        Actor --> UI: Role
+
+
+    UI -> Controller: buildUser(username, \npassword, firstName,\nlastName, email, \nrole)
+    activate Controller
+       Controller -> Service: registerNewUser(username, \npassword, firstName,\nlastName, email, \nrole)
+      activate Service
+                Service -> Domain: create(username, \npassword, firstName,\nlastName, email, \nrole)
+
+                activate Domain
+                Domain -> Service: user
+                deactivate Domain
+                Service -> Controller: user
+                deactivate Service
+
+
+
+
+
+
+
+
+
+
+
+       Controller -> Persistence: repositories()
+        activate Persistence
+            note right of Persistence: pode criar repositório em memória ou JPA
+            Persistence -> Factory: create
+            Persistence -> Controller: factory
+        deactivate Persistence
+
+        Controller -> Factory: systemUsers()
+        activate Factory
+            Factory -> Repository: create
+            Factory -> Controller: systemUserRepository
+        deactivate Factory
+
+        Controller->Repository:save(user)
+        Controller->UI: user
+        UI-->Actor: displaySystemUserInfo
+
+alt Role=Student
+UI-->Actor: Ask student information ()
+Actor--> UI: taxpayerNumber,birthDate,fullName,shortName
+note right of BuilderStd:StudentBuilder é usado para criar uma entidade do tipo User num estado válido
+UI-> Controller: buildStudent(taxpayerNumber,\nbirthdate,\nfullName,shortName)
+Controller-> BuilderStd: create
+Controller-> BuilderStd: setTaxpayerNumber(taxpayerNumber)
+Controller-> BuilderStd: setBirthdate(birthdate)
+Controller-> BuilderStd: setFullName(fullName)
+Controller -> BuilderStd: setShortName(shortName)
+Controller-> BuilderStd: setShortName(shortName)
+Controller->BuilderStd: buildStudent()
+activate BuilderStd
+    BuilderStd->DomainStudent: create(systemUser,\ntaxpayerNumber,\nbirthdate,\nfullName,shortName)
+    DomainStudent->BuilderStd: student
+    BuilderStd->Controller:student
+deactivate BuilderStd
+ Controller -> Persistence: repositories()
+        activate Persistence
+            note right of Persistence: pode criar repositório em memória ou JPA
+            Persistence -> Factory: create
+            Persistence -> Controller: factory
+        deactivate Persistence
+
+        Controller -> Factory: students()
+        activate Factory
+            Factory -> Repository2: create
+            Factory -> Controller: studentRepository
+        deactivate Factory
+
+        Controller->Repository2:save(student)
+        Controller->UI: student
+        UI--> Actor: displayStudentInfo
+end loop
+
+alt Role=Teacher
+UI-->Actor: Ask teacher information ()
+Actor--> UI: taxpayerNumber,birthDate,shortName,fullName, acronym
+note right of BuilderTch:TeacherBuilder é usado para criar uma entidade do tipo User num estado válido
+UI-> Controller: buildTeacher(acronym,\ntaxpayerNumber,\nbirthdate,\nfullName, shortName)
+Controller-> BuilderTch: create
+Controller-> BuilderTch: setAcronym(acronym)
+Controller-> BuilderTch: setTaxpayerNumber(taxpayerNumber)
+Controller-> BuilderTch: setBirthdate(birthdate)
+Controller-> BuilderTch: setShortName(shortName)
+Controller-> BuilderTch: setFullName(fullName)
+Controller->BuilderTch: buildTeacher()
+activate BuilderTch
+    BuilderTch->DomainTeacher: create(systemUser,\ntaxpayerNumber,\nbirthdate,\nfullName,shortName, acronym)
+    DomainTeacher->BuilderTch: teacher
+    BuilderTch->Controller: teacher
+
+deactivate BuilderTch
+ Controller -> Persistence: repositories()
+        activate Persistence
+            note right of Persistence: pode criar repositório em memória ou JPA
+            Persistence -> Factory: create
+            Persistence -> Controller: factory
+        deactivate Persistence
+
+        Controller -> Factory: teachers()
+        activate Factory
+            Factory -> Repository3: create
+            Factory -> Controller: teacherRepository
+        deactivate Factory
+
+        Controller->Repository3:save(teacher)
+        Controller->UI: teacher
+        UI--> Actor: displayTeacherInfo
+end loop
+    deactivate Controller
+
+deactivate UI
+@enduml

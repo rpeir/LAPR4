@@ -1,0 +1,65 @@
+@startuml
+title "Domain Model Extract-Archive Board"
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+hide circle
+hide methods
+package Board{
+  class Board <<root>> {
+    - maxColumns
+    - maxRows
+  }
+
+  class Title <<value object>> {}
+
+  class Column <<entity>>{
+    - title
+    - id
+  }
+
+  class Row <<entity>>{
+    - title
+    - id
+  }
+
+  class State <<enum>> {}
+
+  note bottom of State {
+    active
+    archived
+  }
+}
+package eCourseUser{
+  class eCourseUser <<root>>{
+  }
+
+  class ShortName <<value object>>{}
+  class FullName <<value object>>{}
+  class BirthDate <<value object>>{}
+  class Email <<value object>>{}
+  class TaxPayerNumber <<value object>>{}
+}
+eCourseUser.eCourseUser ..> Board.Board: archive
+eCourseUser.eCourseUser --> ShortName : has
+eCourseUser.eCourseUser --> FullName : has
+eCourseUser.eCourseUser --> BirthDate : has
+eCourseUser.eCourseUser --> Email : has
+eCourseUser.eCourseUser --> TaxPayerNumber : has
+Board.Board --> Board.Title : has
+Board.Board --> "*" Board.Column : has
+Board.Board --> "*" Board.Row : has
+Board.Board --> Board.State : has
+
+@enduml

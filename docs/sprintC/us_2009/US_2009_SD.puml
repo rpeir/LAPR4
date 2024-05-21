@@ -1,0 +1,162 @@
+@startuml
+title User Exam Interaction
+
+actor User
+participant "TakeExamUI\nTakeExamService" as UI <<presentation>>
+
+participant TakeExamController as CTRL << application >>
+database StudentRepository as StudentRepo << persistence >>
+participant ListExamsService << service >>
+participant ListCourseEnrollmentsService as CEService << service >>
+database ExamExecutionRepository as EERepo << persistence >>
+participant "availableExams\n:List<Exam>" as studentExams
+database ExamRepository as ExamRepo << persistence >>
+participant "ExamExecutionBuilder" as Builder << domain >>
+autonumber
+
+User -> UI: Select Take Exam option
+activate UI
+UI -> CTRL : availableExams()
+activate CTRL
+CTRL -> StudentRepo : findByEmail(authenticatedUser().email())
+activate StudentRepo
+StudentRepo --> CTRL : student
+deactivate StudentRepo
+CTRL -> ListExamsService : availableExams(student)
+activate ListExamsService
+ListExamsService -> CEService : coursesImEnrolled()
+activate CEService
+CEService --> ListExamsService : studentCourses : Iterable<Course>
+deactivate CEService
+ListExamsService -> EERepo : findByStudent(student)
+activate EERepo
+EERepo --> ListExamsService : studentExamsExecutions : List<ExamExecution>
+deactivate EERepo
+
+ListExamsService -> studentExams ** : create
+
+loop for each course in studentCourses
+
+ListExamsService -> ExamRepo : findByCourse(course)
+activate ExamRepo
+ExamRepo --> ListExamsService : courseExams : Iterable<Exam>
+deactivate ExamRepo
+
+loop for each exam in courseExams
+
+alt exam.isAvailable()
+
+note right of ListExamsService
+    if exam is taken, ignore
+end note
+
+ListExamsService -> studentExams : add(exam)
+
+end alt
+
+end loop
+
+end loop
+
+ListExamsService --> CTRL : availableExams : List<Exam>
+deactivate ListExamsService
+CTRL --> UI : availableExams : List<Exam>
+deactivate CTRL
+
+UI --> User: Display Available Exams
+User -> UI: Select Exam
+
+UI -> CTRL : startExam(exam)
+activate CTRL
+
+CTRL -> Builder : ofStudent(student)
+CTRL -> Builder : ofExam(exam)
+CTRL --> UI
+deactivate CTRL
+
+loop for each question of the exam
+UI --> User: Display question
+User -> UI: Provide Answer
+
+alt trueFalseQuestion
+
+UI -> CTRL : answerTrueFalseQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+else singleChoiceQuestion
+
+UI -> CTRL : answerSingleChoiceQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+else shortAnswerQuestion
+
+UI -> CTRL : answerShortAnswerQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+else numericQuestion
+
+UI -> CTRL : answerNumericQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+else multipleChoiceQuestion
+
+UI -> CTRL : answerMultipleChoiceQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+else missingWordQuestion
+
+UI -> CTRL : answerMissingWordQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+else matchingQuestion
+
+UI -> CTRL : answerMatchingQuestion(question, answer, grade)
+activate CTRL
+CTRL -> Builder : withQuestionAnswer(question.answer(answer, grade))
+CTRL --> UI
+deactivate CTRL
+
+end alt
+
+end loop
+
+User -> UI: Finish Exam
+UI -> CTRL : finishExam()
+
+activate CTRL
+CTRL -> Builder : build()
+activate Builder
+Builder --> CTRL : examExecution
+deactivate Builder
+
+CTRL -> EERepo : save(examExecution)
+activate EERepo
+EERepo --> CTRL : examExecution
+deactivate EERepo
+
+CTRL --> UI : examExecution
+
+deactivate CTRL
+
+UI --> User: Calculate Final Grade
+UI --> User: Display Feedback
+deactivate UI
+@enduml

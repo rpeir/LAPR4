@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Manager" as MG
+
+activate MG
+MG -> ":System" : selects option "List System Users"
+activate ":System"
+":System"--> MG : shows available users in the system
+deactivate ":System"
+deactivate MG
+
+@enduml

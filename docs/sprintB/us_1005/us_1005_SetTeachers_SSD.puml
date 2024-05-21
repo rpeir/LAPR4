@@ -1,0 +1,16 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+title As a Manager I want to set teachers to  course
+autonumber
+
+actor Manager
+participant System
+
+Manager -> System: Request to set Teachers to a Course
+System --> Manager : Ask to select one of the available courses
+Manager -> System: Select Course
+System --> Manager: Show teachers
+Manager -> System: Select Teachers
+System --> Manager: Informs of Success or Failure.
+
+@enduml

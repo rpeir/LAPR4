@@ -1,0 +1,76 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Create Board
+top to bottom direction
+skinparam linetype ortho
+
+
+
+package repositories {
+    interface BoardRepository{
+        + save(board) : void
+
+    }
+    interface SharedBoardRepository{
+        + save(boardShared) : void
+    }
+}
+package builder{
+ interface BoardBuilder{
+    + setMaxColumns(maxColumns) : void
+    + setTitle(title) : void
+    + setColumnTitle(columnTitle) : void
+    + setRowTitle(rowTitle) : void
+    + createBoard() : Board
+ }
+ interface SharedBoardBuilder{
+    + setBoard(board) : void
+    + setPermission(permission) : void
+    + createSharedBoard() : BoardShared
+ }
+}
+class Board{
+ + createBoard(maxRows,maxColumns,Title,Column title,Row title) : Board
+ + setState() : void
+}
+class BoardShared{
+ + createSharedBoard(board,permission) : BoardShared
+}
+
+
+package infraestructure.persistence {
+    class PersistenceContext {
+    + repositories : RepositoryFactory
+    }
+
+    interface RepositoryFactory {
+        + boards(): BoardRepository
+        + boardShares(): SharedBoardRepository
+
+    }
+}
+
+class CreateBoardUI <<presentation>>
+
+class CreateBoardController <<application>> {
+    + createBoard(maxRows: int, maxColumns: int, title: String, columnTitle: String, rowTitle: String): Board
+    + defineBoardSharePermissions(board: Board): ShareBoard
+}
+
+CreateBoardUI ..> CreateBoardController
+CreateBoardController ..> PersistenceContext
+CreateBoardController ..> BoardBuilder
+CreateBoardController ..> SharedBoardBuilder
+CreateBoardController ..> RepositoryFactory
+CreateBoardController ..> BoardRepository
+CreateBoardController ..> SharedBoardRepository
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> BoardRepository
+RepositoryFactory --> SharedBoardRepository
+BoardRepository --> Board
+SharedBoardRepository --> BoardShared
+BoardBuilder --> Board
+SharedBoardBuilder --> BoardShared
+
+
+@enduml

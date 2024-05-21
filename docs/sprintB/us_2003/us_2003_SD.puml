@@ -1,0 +1,63 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor teacher as user
+
+participant ListCourseExamsUI as UI  <<presentation>>
+participant ListCourseExamsController as Controller <<application>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory <<factory>>
+database TeacherRepository <<repository>>
+participant Teacher <<domain>>
+
+database ExamRepository <<repository>>
+
+user --> UI : Request exams of a course
+activate UI
+UI -> Controller : create
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> Context : repositories()
+activate Context
+Context --> Controller : RepositoryFactory
+note right : The repositories can be JPA or InMemory
+deactivate Context
+Controller -> RepositoryFactory : teachers()
+activate RepositoryFactory
+RepositoryFactory --> Controller : TeacherRepository
+deactivate RepositoryFactory
+Controller -> RepositoryFactory : exams()
+activate RepositoryFactory
+RepositoryFactory --> Controller : ExamRepository
+deactivate RepositoryFactory
+deactivate Controller
+
+UI -> Controller : listCourses()
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> TeacherRepository : findById()
+activate TeacherRepository
+TeacherRepository --> Controller : teacher
+deactivate TeacherRepository
+Controller -> Teacher : courses()
+activate Teacher
+Teacher --> Controller : Iterable<Courses>
+deactivate Teacher
+Controller --> UI : Iterable<Courses>
+
+UI --> user : Ask teacher's course
+user --> UI : Select course
+UI -> Controller : listCourseExams(course)
+note right : Authenticate if is a teacher
+Controller -> ExamRepository : findByCourse()
+activate ExamRepository
+ExamRepository --> Controller : Iterable<Exams>
+deactivate ExamRepository
+Controller --> UI : Iterable<Exams>
+deactivate Controller
+UI --> user : List exams of the course
+deactivate UI
+
+@enduml

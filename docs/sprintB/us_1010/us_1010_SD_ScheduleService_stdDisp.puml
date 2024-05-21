@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title ScheduleService - checkCourseStudentDisponibility()
+autonumber
+
+participant ScheduleService as Service <<service>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as RF <<factory>>
+participant CourseEnrollment as CE <<domain>>
+participant Course <<domain>>
+database ClassRepository as Classes <<repository>>
+
+-> Service : checkCourseStudentDisponibility\n(course, date, \ntimePeriod, courseEnrollment)
+activate Service
+
+Service -> Context : repositories()
+activate Context
+Context -> Service : RepositoryFactory
+deactivate Context
+Service -> RF : classes()
+activate RF
+RF -> Service : ClassRepository
+deactivate RF
+
+Service -> CE : enrolledStudents()
+activate CE
+CE --> Service : List<Student>
+deactivate CE
+
+Service -> Course : closeDate()
+activate Course
+Course --> Service : endingDate
+deactivate Course
+
+loop for each day of the week until endingDate
+Service -> Classes : findByDateAndTimePeriod(timePeriod)
+activate Classes
+Classes --> Service : Iterable<Class>
+deactivate Classes
+loop for each returned class
+alt returned class contains an enrolled student
+<-- Service : false
+end alt
+end loop
+end loop
+
+<-- Service : true
+deactivate Service
+
+
+@enduml

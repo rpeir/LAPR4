@@ -1,0 +1,19 @@
+@startuml
+autonumber
+actor "Manager" as MG
+
+activate MG
+MG -> ":System" : selects option "Open/Close Enrollments in Course"
+activate ":System"
+":System" --> MG : shows available courses
+deactivate ":System"
+MG -> ":System" : selects course
+activate ":System"
+":System"--> MG : shows possible options (open or close enrollments)
+deactivate ":System"
+MG -> ":System": selects option
+activate ":System"
+":System"--> MG : informs operation success
+deactivate MG
+
+@enduml

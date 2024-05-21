@@ -1,0 +1,62 @@
+@startuml
+'https://plantuml.com/object-diagram
+
+title "Domain Model Extract of Class Shedule"
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+hide circle
+hide methods
+
+package Teacher{
+  class Teacher <<root>> {
+  }
+
+  class Acronym <<value object>>{}
+}
+
+
+package Course{
+  class Course <<root>> {
+    - courseID
+    - minEnrolledStudents
+    - maxEnrolledStudents
+  }
+
+  enum State <<enum>> {}
+
+  note bottom of State {
+    open
+    close
+    enroll
+    in_progress
+    closed
+  }
+
+  class title << value object>>{}
+  class description << value object>>{}
+}
+
+Course.Course --> description: has
+Course.Course --> title: has
+Course.Course --> Course.State: has
+
+Teacher.Teacher --> Acronym : has
+
+Teacher.Teacher "N"-->"N" Course.Course : teaches in
+
+Manager.Manager ..> Course.Course : create
+
+
+@enduml

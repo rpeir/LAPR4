@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor "ECourseUser" as User
+participant "System" as System
+
+User -> System: select option "Undo Last Change of a PostIt"
+System --> User: list available boards
+User -> System: select board
+User -> System: select postit (row, column)
+System --> User: show sucess
+
+@enduml

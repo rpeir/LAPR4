@@ -1,0 +1,123 @@
+@startuml
+
+title Student Lists Grades - Class Diagram
+left to right direction
+top to bottom direction
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+package Domain{
+class Student {
+  -version: Long
+  -emailAddress: EmailAddress
+  -taxPayerNumber: TPN
+  -fullName: String
+  -shortName: String
+  -birthdate: Date
+  -mechanographicNumber: MechanographicNumber
+}
+
+class CourseEnrollment {
+  -courseEnrollmentId: Long
+  -enrollmentApplications: Set<EnrollmentApplication>
+  -course: Course
+}
+
+class Exam {
+  -id: Long
+  -examTitle: String
+  -course: Course
+  -examHeader: ExamHeader
+  -sections: Set<Section>
+}
+
+class ExamExecution {
+  -examExecutionId: Long
+  -beginDate: Calendar
+  -student: Student
+  -exam: Exam
+  -grade: Float
+}
+
+}
+package Repositories{
+interface StudentRepository {
+  +findByEmail(email: String): Student
+}
+
+interface CourseEnrollmentRepository {
+}
+
+interface ExamRepository {
+}
+
+interface ExamExecutionRepository {
+  +findByStudent(student: Student): Iterable<ExamExecution>
+}
+}
+
+class ListExamsService {
+  +listStudentGrades(student: Student): List<ExamExecution>
+}
+
+package Application{
+class ListStudentGradesController {
+  +listStudentGrades(): Iterable<ExamExecution>
+}
+}
+package Presentation{
+class ListStudentGradesUI {
+  +doShow(): boolean
+  +headline: String
+}
+}
+package Persistence{
+class PersistenceContext {
+  +repositories: RepositoryFactory
+}
+}
+package Factory{
+class RepositoryFactory {
+  +examExecutions(): ExamExecutionRepository
+  +exams(): ExamRepository
+  +enrollments(): CourseEnrollmentRepository
+  +students(): StudentRepository
+}
+}
+
+ListStudentGradesUI ..> ListStudentGradesController
+ListStudentGradesUI ..> ExamExecution
+
+ListStudentGradesController ..> PersistenceContext
+ListStudentGradesController ..> RepositoryFactory
+ListStudentGradesController ..> TeacherRepository
+ListStudentGradesController ..> CourseEnrollmentRepository
+ListStudentGradesController ..> ListExamsService
+
+ListExamsService ..> ExamExecution
+ListExamsService ..> Student
+ListExamsService ..> ExamExecutionRepository
+
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> StudentRepository
+RepositoryFactory --> ExamExecutionRepository
+RepositoryFactory --> ExamRepository
+RepositoryFactory --> CourseEnrollmentRepository
+
+StudentRepository --> Student
+CourseEnrollmentRepository --> CourseEnrollment
+ExamRepository --> Exam
+ExamExecutionRepository --> ExamExecution
+
+ExamExecution --> Exam
+ExamExecution --> Student
+
+@enduml

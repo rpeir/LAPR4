@@ -1,0 +1,80 @@
+@startuml
+'http://plantuml.com/skinparam.html
+skinparam BoxPadding 30
+autonumber
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor User as Actor
+
+box ECourse TCP Client App
+participant ArchiveBoardUI as UI <<presentation>>
+participant "ArchiveBoard\nTCPClientController" as ClientController <<TCP Client Controller>>
+end box
+
+box ECourse TCP Server App
+participant "ArchiveBoard\nTCPServerController" as ServerController <<TCP Server Controller>>
+participant ArchiveBoardController as DomainCTRL <<application>>
+participant Board as Domain <<domain>>
+database BoardRepository as Repository <<repository>>
+end box
+
+Actor --> UI: selects "archive a board" option
+activate UI
+UI -> ClientController: create
+UI -> ClientController: listActiveBoards()
+activate ClientController
+ClientController --> ServerController: TCP connection
+activate ServerController
+note right of ServerController
+    verify if the user is logged in and retrieve the email, using the sessionManager
+end note
+ServerController -> DomainCTRL: listActiveBoards(email)
+activate DomainCTRL
+DomainCTRL -> Repository: findActiveByOwner(email)
+activate Repository
+Repository -> DomainCTRL: Iterable<Board>
+deactivate Repository
+DomainCTRL -> ServerController: Iterable<Board>
+deactivate DomainCTRL
+ServerController --> ClientController: TCP connection
+deactivate ServerController
+ClientController -> UI: Iterable<Board>
+deactivate ClientController
+UI -> Actor: shows active Owned Boards
+deactivate UI
+Actor --> UI: selects board to archive
+activate UI
+UI -> ClientController: archiveBoard(boardTitle)
+activate ClientController
+ClientController --> ServerController: TCP connection
+activate ServerController
+note right of ServerController
+    verify if the user is logged in and retrieve the email, using the sessionManager
+end note
+ServerController -> DomainCTRL: archiveBoard(boardTitle)
+activate DomainCTRL
+DomainCTRL -> Repository: findByTitle(boardTitle)
+activate Repository
+Repository -> DomainCTRL: board
+deactivate Repository
+DomainCTRL -> Domain: archive()
+activate Domain
+deactivate Domain
+DomainCTRL -> Repository: save(board)
+activate Repository
+Repository -> DomainCTRL: board
+deactivate Repository
+DomainCTRL -> ServerController: board
+deactivate DomainCTRL
+ServerController --> ClientController: TCP connection
+deactivate ServerController
+ClientController -> UI: success
+deactivate ClientController
+UI -> Actor: shows success
+
+
+@enduml

@@ -1,0 +1,121 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+title Teacher Recurring Class Schedule
+autonumber
+
+actor teacher
+participant ClassScheduleUI as UI <<presentation>>
+participant ClassScheduleController as Controller <<application>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory <<factory>>
+
+database TeacherRepository <<repository>>
+participant Teacher <<domain>>
+
+database CourseEnrollmentRepository <<repository>>
+participant ScheduleService as Service <<service>>
+
+database ClassRepository <<repository>>
+
+teacher -> UI: Request new class schedule
+activate UI
+UI -> Controller : create
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> Context : repositories()
+activate Context
+Context --> Controller : RepositoryFactory
+note right : The repositories can be JPA or InMemory
+deactivate Context
+Controller -> RepositoryFactory : teachers()
+activate RepositoryFactory
+RepositoryFactory --> Controller : TeacherRepository
+deactivate RepositoryFactory
+Controller -> RepositoryFactory : courseEnrollments()
+activate RepositoryFactory
+RepositoryFactory --> Controller : CourseEnrollmentRepository
+deactivate RepositoryFactory
+Controller -> RepositoryFactory : classes()
+activate RepositoryFactory
+RepositoryFactory --> Controller : ClassRepository
+deactivate RepositoryFactory
+Controller -> TeacherRepository : findById()
+activate TeacherRepository
+TeacherRepository --> Controller : teacher
+deactivate TeacherRepository
+
+'Controller -> ClassBuilder : create
+'activate ClassBuilder
+'deactivate ClassBuilder
+
+deactivate Controller
+UI -> Controller : listCourses()
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> Teacher : courses()
+activate Teacher
+Teacher --> Controller : Iterable<Courses>
+deactivate Teacher
+Controller --> UI : Iterable<Courses>
+deactivate Controller
+UI --> teacher : Ask teacher's course
+teacher -> UI : Select course
+
+UI -> Controller : courseSchedule(course)
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> ClassRepository : findByCourse(course)
+activate ClassRepository
+ClassRepository --> Controller : Iterable<Class>
+deactivate ClassRepository
+Controller --> UI : Iterable<Class>
+deactivate Controller
+
+UI --> teacher : Show course schedule
+UI --> teacher : Ask class information
+teacher -> UI: Input class title, week date and time period
+
+UI -> Controller : checkStudentDisponibility(course, date, timePeriod)
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> CourseEnrollmentRepository : findByCourse(course)
+activate CourseEnrollmentRepository
+CourseEnrollmentRepository --> Controller : Optional<CourseEnrollment>
+deactivate CourseEnrollmentRepository
+Controller -> Service : checkCourseStudentDisponibility(course, date, timePeriod, courseEnrollment)
+activate Service
+ref over CourseEnrollmentRepository, Service, ClassRepository [[us_1010_SD_ScheduleService_stdDisp.puml]] : checkCourseStudentDisponibility()
+Service --> Controller : boolean
+deactivate Service
+Controller --> UI : boolean
+deactivate Controller
+
+alt student of the course has\nalready another class
+UI --> teacher: Warn that the class\nwill be overlapped
+teacher -> UI: Continue/Cancel
+end alt
+
+UI -> Controller : scheduleClass(title, course, date, timePeriod)
+activate Controller
+note right : Authenticate if is a teacher
+Controller -> CourseEnrollmentRepository : findByCourse(course)
+activate CourseEnrollmentRepository
+CourseEnrollmentRepository --> Controller : Optional<CourseEnrollment>
+deactivate CourseEnrollmentRepository
+Controller -> Service : scheduleClass(title, course, date, timePeriod, courseEnrollment, teacher)
+activate Service
+ref over Service, ClassRepository [[us_1010_SD_ScheduleService_schedule.puml]] : scheduleClass()
+Service --> Controller : Iterable<Class>
+deactivate Service
+Controller -> ClassRepository : saveAll(classes)
+activate ClassRepository
+deactivate ClassRepository
+Controller --> UI : Iterable<Class>
+
+
+deactivate Controller
+
+UI --> teacher: Confirm class schedule
+deactivate UI
+
+@enduml

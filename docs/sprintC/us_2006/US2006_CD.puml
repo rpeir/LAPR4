@@ -1,0 +1,141 @@
+@startuml
+
+title Teacher Lists Grades by Course - Class Diagram
+left to right direction
+top to bottom direction
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+package Domain{
+class Teacher {
+  -version: Long
+  -emailAddress: EmailAddress
+  -taxPayerNumber: TPN
+  -fullName: String
+  -shortName: String
+  -birthdate: Date
+  -acronym: Acronym
+}
+class Course{
+    -courseId: Long
+    -courseCode: String
+    -courseTitle: Designation
+    -state: State
+    -int: minStudents
+    -int: maxStudents
+    -closeDate: Date
+    -description: Description
+    -teacherList: Set<Teacher>
+}
+
+class CourseEnrollment {
+  -courseEnrollmentId: Long
+  -enrollmentApplications: Set<EnrollmentApplication>
+  -course: Course
+}
+
+class Exam {
+  -id: Long
+  -examTitle: String
+  -course: Course
+  -examHeader: ExamHeader
+  -sections: Set<Section>
+}
+
+class ExamExecution {
+  -examExecutionId: Long
+  -beginDate: Calendar
+  -student: Student
+  -exam: Exam
+  -grade: Float
+}
+
+}
+package Repositories{
+interface TeacherRepository {
+  +findByEmail(email: EmailAddress): Teacher
+}
+
+interface CourseEnrollmentRepository {
+}
+
+interface CourseRepository {
+    +findByTeacher(teacherId: EmailAddress): Iterable<Course>
+}
+
+interface ExamRepository {
+}
+
+interface ExamExecutionRepository {
+  +findByCourse(course: Course): Iterable<ExamExecution>
+}
+}
+
+class ListExamsService {
+    +findByCourse(course: Course): Iterable<ExamExecution>
+}
+
+package Application{
+class ListCourseGradesController {
+  +findByTeacher(): Iterable<Course>
+  +findByCourse(course: Course): Iterable<ExamExecution>
+}
+}
+package Presentation{
+class ListCourseGradesUI {
+  +doShow(): boolean
+  +headline: String
+}
+}
+package Persistence{
+class PersistenceContext {
+  +repositories: RepositoryFactory
+}
+}
+package Factory{
+class RepositoryFactory {
+  +examExecutions(): ExamExecutionRepository
+  +exams(): ExamRepository
+  +courses(): CourseRepository
+  +enrollments(): CourseEnrollmentRepository
+  +teachers(): TeacherRepository
+}
+}
+
+ListCourseGradesUI ..> ListCourseGradesController
+ListCourseGradesUI ..> ExamExecution
+
+ListCourseGradesController ..> PersistenceContext
+ListCourseGradesController ..> RepositoryFactory
+ListCourseGradesController ..> TeacherRepository
+ListCourseGradesController ..> CourseEnrollmentRepository
+ListCourseGradesController ..> ListExamsService
+
+ListExamsService ..> ExamExecution
+ListExamsService ..> Course
+ListExamsService ..> ExamExecutionRepository
+
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> TeacherRepository
+RepositoryFactory --> ExamExecutionRepository
+RepositoryFactory --> ExamRepository
+RepositoryFactory --> CourseEnrollmentRepository
+
+TeacherRepository --> Teacher
+CourseEnrollmentRepository --> CourseEnrollment
+ExamRepository --> Exam
+ExamExecutionRepository --> ExamExecution
+CourseRepository --> Course
+
+ExamExecution --> Exam
+Exam --> Course
+
+@enduml

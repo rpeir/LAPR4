@@ -1,0 +1,59 @@
+# Operating System Files
+
+*.DS_Store
+Thumbs.db
+*.sw?
+.#*
+*#
+*~
+*.sublime-*
+
+# Build Artifacts
+
+.gradle/
+build/
+target/
+bin/
+dependency-reduced-pom.xml
+
+# Eclipse Project Files
+
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA Files
+
+*.iml
+*.ipr
+*.iws
+*.idea
+
+# VS Code Files
+
+.vscode/
+*.vscode
+.vscode/*
+
+# Draw.io Backup Files
+
+*.drawio.bkp
+
+README.html
+
+# Local Database Files
+ecourse.mv.db
+ecourse.trace.db
+ecourse.lock.db
+
+# Log Files
+
+*.log
+
+# SharedBoard Server Image Files
+
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico

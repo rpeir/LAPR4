@@ -1,0 +1,160 @@
+@startuml
+title "Domain Model"
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+hide circle
+hide methods
+
+package eCourseUser{
+  class eCourseUser <<root>>{
+  }
+
+  class ShortName <<value object>>{}
+  class FullName <<value object>>{}
+  class BirthDate <<value object>>{}
+  class Email <<value object>>{}
+  class TaxPayerNumber <<value object>>{}
+}
+
+package Teacher{
+  class Teacher <<root>> {
+  }
+
+  class Acronym <<value object>>{}
+}
+
+package Student{
+  class Student <<entity>>{
+  }
+
+  class MechanographicNumber <<value object>>{}
+}
+
+package Board{
+  class Board <<root>> {
+    - maxColumns
+    - maxRows
+  }
+
+  class Title <<value object>> {}
+
+  class Column <<entity>>{
+    - title
+    - id
+  }
+
+  class Row <<entity>>{
+    - title
+    - id
+  }
+
+  class State <<enum>> {}
+
+  note bottom of State {
+    active
+    archived
+  }
+}
+
+package BoardUpdate {
+  class Update <<root>> {
+    - timestamp
+  }
+
+  ' class UpdateType <<enum>> {}
+
+  class BoardUpdate <<entity>> {}
+
+  class CellUpdate <<entity>> {}
+
+  class BoardUpdateType <<enum>> {}
+
+  class CellUpdateType <<enum>> {}
+
+  class BoardChange <<value object>> {}
+
+}
+
+package PostIt {
+  class PostIt <<root>>{}
+
+  class ContentType <<enum>>{}
+
+  note bottom of ContentType {
+    text
+    image
+  }
+
+  class Content <<value object>>{
+    -timestamp
+  }
+}
+
+package BoardShare {
+  class BoardShare <<root>>{}
+
+  class UserPermission <<enum>>{}
+
+    note bottom of UserPermission {
+        read
+        write
+    }
+
+}
+
+MechanographicNumber <--Student.Student: has
+
+Teacher.Teacher --|> eCourseUser.eCourseUser : is a
+Student.Student --|> eCourseUser.eCourseUser : is a
+
+eCourseUser.eCourseUser --> ShortName : has
+eCourseUser.eCourseUser --> FullName : has
+eCourseUser.eCourseUser --> BirthDate : has
+eCourseUser.eCourseUser --> Email : has
+eCourseUser.eCourseUser --> TaxPayerNumber : has
+eCourseUser.eCourseUser ..> Board.Board: archive
+eCourseUser.eCourseUser ..> BoardShare.BoardShare : create
+eCourseUser.eCourseUser ..> PostIt.PostIt : create
+eCourseUser.eCourseUser ..> PostIt.PostIt : update
+
+Board.Board --> Board.Title : has
+Board.Board --> "*" PostIt.PostIt : has
+Board.Board --> "*" Board.Column : has
+Board.Board --> "*" Board.Row : has
+Board.Board --> eCourseUser.eCourseUser : owned by
+Board.Board --> Board.State : has
+Board.Board ..> BoardShare.BoardShare : notifies user
+Board.Board ..> eCourseUser.eCourseUser : created by
+Board.Board ..> eCourseUser.eCourseUser : viewed by
+
+PostIt.PostIt --> PostIt.Content : has
+PostIt.Content --> PostIt.ContentType : has
+PostIt.Content "N"-->"1" eCourseUser.eCourseUser : created by
+
+Board.Board --> "*" BoardUpdate.Update : has
+BoardUpdate.Update <|-- BoardUpdate.CellUpdate : is a
+BoardUpdate.Update <|-- BoardUpdate.BoardUpdate : is a
+BoardUpdate.Update --> eCourseUser.eCourseUser : is made by
+
+BoardUpdate.CellUpdate --> BoardUpdate.CellUpdateType : has
+BoardUpdate.BoardUpdate --> BoardUpdate.BoardUpdateType : has
+BoardUpdate.BoardUpdate --> BoardUpdate.BoardChange : has
+BoardUpdate.CellUpdate --> PostIt.PostIt : is relative to
+BoardUpdate.CellUpdate --> PostIt.Content : has
+
+BoardShare.BoardShare "N"-->"1" Board.Board : shares
+BoardShare.BoardShare --> eCourseUser.eCourseUser : has
+BoardShare.BoardShare --> BoardShare.UserPermission : has
+@enduml

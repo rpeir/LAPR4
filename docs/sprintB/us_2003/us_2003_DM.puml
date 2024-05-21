@@ -1,0 +1,103 @@
+@startuml
+title "Domain Model Extract of List Course Exams"
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+hide circle
+hide methods
+
+package Teacher{
+  class Teacher <<root>> {
+  }
+
+  class Acronym <<value object>>{}
+}
+
+package Exam{
+  class Exam <<root>>{
+    - description
+    - openDate
+    - closeDate
+  }
+
+  class ExamHeader <<entity>> {
+    - description
+  }
+
+  class GradeType <<enum>> {}
+
+  note bottom of GradeType {
+    none
+    on_submission
+    after_closing
+  }
+
+  class FeedbackType <<enum>> {}
+
+  note bottom of FeedbackType {
+    none
+    on_submission
+    after_closing
+  }
+
+  class Title <<value object>>{}
+
+  class Section <<entity>> {
+      -description
+    }
+}
+
+package Course{
+  class Course <<root>> {
+    - courseID
+    - minEnrolledStudents
+    - maxEnrolledStudents
+  }
+
+  enum State <<enum>> {}
+
+  note bottom of State {
+    open
+    close
+    enroll
+    in_progress
+    closed
+  }
+
+  class title << value object>>{}
+  class description << value object>>{}
+}
+
+Exam.Exam --> ExamHeader: has
+Exam.Exam --> Exam.Title: has
+Exam.Exam --> "*" Exam.Section: has
+Exam.Exam --> Course.Course : is of
+Exam.ExamHeader --> FeedbackType : has
+Exam.ExamHeader --> GradeType : has
+
+Course.Course --> description: has
+Course.Course --> title: has
+Course.Course --> Course.State: has
+
+Teacher.Teacher --> Acronym : has
+
+Teacher.Teacher "N"-->"N" Course.Course : teaches in
+
+Teacher.Teacher ..> Exam.Exam : creates
+Teacher.Teacher ..> Exam.Exam: views course exams
+Teacher.Teacher "N"-->"N" Exam.Exam : creates
+Teacher.Teacher "N"-->"N" Exam.Exam: views
+
+
+@enduml

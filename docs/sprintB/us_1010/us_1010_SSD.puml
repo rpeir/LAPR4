@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+title Teacher Recurring Class Schedule
+autonumber
+
+actor teacher
+participant System
+
+teacher -> System: Request new class schedule
+System --> teacher : Ask teacher's course
+teacher -> System : Select course
+System --> teacher : Show course schedule
+System --> teacher : Ask class information
+teacher -> System: Input class title, week date and time period
+alt student of the course has\nalready another class
+System --> teacher: Warn that the class\nwill be overlapped
+teacher -> System: Continue/Cancel
+end alt
+System --> teacher: Confirm class schedule
+
+@enduml

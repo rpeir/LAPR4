@@ -1,0 +1,91 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Register User
+top to bottom direction
+skinparam linetype ortho
+
+
+
+package repositories {
+    interface UserRepository{
+        + save(systemUser): void
+    }
+    interface StudentRepository{
+        + save(student): void
+    }
+    interface TeacherRepository{
+        + save(teacher):void
+    }
+}
+
+package infraestructure.persistence {
+    class PersistenceContext {
+    + repositories : RepositoryFactory
+    }
+
+    interface RepositoryFactory {
+        + systemUsers() : UserRepository
+        + students() : StudentRepository
+        + teachers(): TeacherRepository
+    }
+}
+package service{
+interface UserManagementService{
+    + registerUser(username,password, firstName,lastName,email, role): SystemUser
+
+}
+
+package builder{
+interface StudentBuilder{
+    + setTaxpayerNumber(taxpayerNumber): void
+    + setBirthdate(birthdate)
+    + setFullName(fullName)
+    + buildStudent(): Student
+ }
+interface TeacherBuilder{
+    + setAcronym(acronym): void
+        + setTaxpayerNumber(taxpayerNumber): void
+        + setBirthdate(birthdate)
+        + setFullName(fullName)
+    + buildTeacher(): Teacher
+ }
+}
+class SystemUser{
+ + create (username,password, firstName,lastName,email, role)
+}
+class Student{
++ create(username,\npassword, firstName,lastName,email, role, studentNumber,taxpayerNumber,birthdate,fullName)
+}
+class Teacher{
++ create(username,password,firstName,lastName,email, role, acronym,taxpayerNumber,birthdate,fullName)
+}
+
+
+class RegisterUserUI <<presentation>>
+
+class RegisterUserController <<application>> {
+    + buildUser(username,password, firstName,lastName, email, role): SystemUser
+    + buildStudent(username,password, firstName,lastName,email, role, studentNumber,taxpayerNumber,birthdate,fullName): Student
+    + buildTeacher(username,password, firstName,lastName,email, role, studentNumber,taxpayerNumber,birthdate,fullName): Teacher
+}
+
+RegisterUserUI ..> RegisterUserController
+RegisterUserController ..> PersistenceContext
+RegisterUserController ..> RepositoryFactory
+RegisterUserController ..> UserRepository
+RegisterUserController ..> StudentBuilder
+RegisterUserController .:> TeacherBuilder
+RegisterUserController .:> StudentRepository
+RegisterUserController ..> TeacherRepository
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> UserRepository
+UserRepository ..> SystemUser.SystemUser
+TeacherBuilder ..> Teacher
+StudentBuilder ..> Student
+UserBuilder ..> SystemUser
+StudentRepository ..> Student
+TeacherRepository ..> Teacher
+RegisterUserController ..> UserManagementService
+
+
+@enduml

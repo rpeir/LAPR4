@@ -1,0 +1,26 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+title SD - Register Course
+
+participant ":RegisterCourseUI" as ui
+participant ":RegisterCourseController" as ctrl
+participant ":PercistenceContext" as pc
+participant ":RepositoryFactory" as rf
+participant ":CourseRepository" as repo
+participant ":Course" as course
+
+ui -> ctrl: create
+ctrl -> pc: repositories()
+pc -> rf : create
+rf -> repo: create
+pc --> ctrl: CourseRepository
+
+ui -> ui: doshow()
+ui -> ctrl: registerCourse(title, minStudents, maxStudents, description)
+
+ctrl -> course: create(title, minStudents, maxStudents, description)
+ctrl -> repo: save(newCourse)
+
+@enduml

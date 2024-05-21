@@ -1,0 +1,88 @@
+@startuml
+title Class Diagram - Approve or Reject Student Applications to Courses
+
+package presentation {
+  class ApprovalUI {
+    +create(): void
+    +showPendingRequests(requests: List<Enrollment>): void
+    +showRequestDetails(request: Enrollment): void
+    +showOperationSuccessMessage(): void
+  }
+}
+
+package application {
+  class ApprovalController {
+    -enrollmentRepository: EnrollmentRepository
+    -courseRepository: CourseRepository
+    -studentRepository: StudentRepository
+
+    +create(): void
+    +listPendingApprovals(): List<Enrollment>
+    +findRequest(requestId: String): Enrollment
+    +processApproval(enrollment: Enrollment, option: String): void
+  }
+}
+
+package domain {
+  class CourseEnrollment {
+    +getStatus(): String
+    +setStatus(status: String): void
+  }
+
+  class Course {
+    +getId(): String
+  }
+
+  class Student {
+    +getId(): String
+  }
+}
+
+package persistence {
+  class PersistenceContext {
+    +repositories(): RepositoryFactory
+  }
+}
+
+package factory {
+  class RepositoryFactory {
+    +createEnrollmentRepository(): EnrollmentRepository
+    +createCourseRepository(): CourseRepository
+    +createStudentRepository(): StudentRepository
+  }
+}
+
+package repositories {
+  interface EnrollmentRepository {
+    +listPendingApprovals(): List<Enrollment>
+    +findRequest(requestId: String): Enrollment
+    +saveEnrollment(enrollment: Enrollment): void
+  }
+
+  interface CourseRepository {
+    +findCourse(courseId: String): Course
+  }
+
+  interface StudentRepository {
+    +findStudent(studentId: String): Student
+  }
+}
+
+ApprovalUI --> ApprovalController
+ApprovalController --> EnrollmentRepository
+ApprovalController --> CourseRepository
+ApprovalController --> StudentRepository
+CourseEnrollment --> Course
+CourseEnrollment --> Student
+EnrollmentRepository --> PersistenceContext
+CourseRepository --> PersistenceContext
+StudentRepository --> PersistenceContext
+PersistenceContext --> RepositoryFactory
+
+
+
+EnrollmentRepository ..> CourseEnrollment
+EnrollmentRepository ..> CourseRepository
+EnrollmentRepository ..> StudentRepository
+
+@enduml

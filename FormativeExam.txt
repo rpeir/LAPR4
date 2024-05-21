@@ -1,0 +1,42 @@
+Titulo
+
+Feedback: none
+Grade: none
+
+
+No cheating!
+
+
+Secção
+Boa sorte!
+
+QUESTION
+Type: Single-Choice
+Question value: 2
+
+QUESTION
+Type: Multiple-Choice
+Question value: 3
+
+QUESTION
+Type: Numeric
+Question value: 3
+
+QUESTION
+Type: True or False
+Question value: 1
+
+QUESTION
+Type: Matching
+Question value: 4
+
+Secção
+Boa sorte!
+
+QUESTION
+Type: Select Missing Words
+Question value: 5
+
+QUESTION
+Type: Short Answer
+Question value: 2

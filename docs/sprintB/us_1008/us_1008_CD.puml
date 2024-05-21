@@ -1,0 +1,84 @@
+@startuml
+title Class Diagram - Request Enrollment in Course
+
+package presentation {
+  class EnrollmentUI {
+    +create(): void
+    +showAvailableCourses(courses: List<Course>): void
+    +showEnrollmentConfirmation(): void
+  }
+}
+
+package application {
+  class EnrollmentController {
+    -courseRepository: CourseRepository
+    -studentRepository: StudentRepository
+    -enrollmentRepository: EnrollmentRepository
+
+    +create(): void
+    +requestEnrollment(courseId: String, studentId: String): void
+  }
+}
+
+package domain {
+  class Course {
+    +getId(): String
+  }
+
+  class Student {
+    +getId(): String
+  }
+
+  class CourseEnrollment {
+    +addApplication(student: Student): void
+  }
+}
+
+package persistence {
+  class PersistenceContext {
+    +repositories(): RepositoryFactory
+  }
+}
+
+package factory {
+  class RepositoryFactory {
+    +createCourseRepository(): CourseRepository
+    +createStudentRepository(): StudentRepository
+    +createEnrollmentRepository(): EnrollmentRepository
+  }
+}
+
+package repositories {
+
+  interface CourseRepository {
+    +listAvailableCourses(): List<Course>
+    +findCourse(courseId: String): Course
+  }
+
+  interface StudentRepository {
+    +findStudent(studentId: String): Student
+  }
+
+  interface EnrollmentRepository {
+    +saveEnrollment(enrollment: Enrollment): void
+  }
+}
+
+EnrollmentUI --> EnrollmentController
+EnrollmentController --> CourseRepository
+EnrollmentController --> StudentRepository
+EnrollmentController --> EnrollmentRepository
+EnrollmentController --> CourseEnrollment
+
+CourseEnrollment --> Student
+CourseEnrollment --> Course
+CourseRepository --> PersistenceContext
+StudentRepository --> PersistenceContext
+EnrollmentRepository --> PersistenceContext
+PersistenceContext --> RepositoryFactory
+EnrollmentRepository ..> CourseEnrollment
+@enduml
+
+
+
+

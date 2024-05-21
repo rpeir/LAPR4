@@ -1,0 +1,125 @@
+@startuml
+'http://plantuml.com/skinparam.html
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor User as Actor
+participant CreateBoardUI as UI <<presentation>>
+participant CreateBoardController as Controller <<application>>
+participant BoardBuilder as Builder <<builder>>
+participant SharedBoardBuilder as Builder2 <<builder>>
+participant "cell:Cell" as DomainCell <<domain>>
+participant "board:Board" as Domain <<domain>>
+participant PersistenceContext as Persistence <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+participant "boardShare:BoardShare" as Domain2 <<domain>>
+database BoardShareRepository as Repository2 <<repository>>
+database BoardRepository as Repository <<repository>>
+'database CellRepository as Repository3 <<repository>>
+Actor --> UI: Create board
+activate UI
+    UI -> Controller: create
+   ' UI ->Controller: createCell()
+    'activate Controller
+     '   Controller -> DomainCell: createCell()
+      '  activate DomainCell
+       '     DomainCell -> Controller: cell
+        'deactivate DomainCell
+        'Controller -> Persistence: repositories()
+        'activate Persistence
+         '   note right of Persistence: pode criar repositório em memória ou JPA
+          '  Persistence -> Factory: create
+           ' Persistence -> Controller: factory
+        'deactivate Persistence
+        'Controller -> Factory: cells()
+        'activate Factory
+         '   Factory -> Repository3: create
+          '  Factory -> Controller: cellRepository
+        'deactivate Factory
+        'Controller->Repository3:save(cell)
+        'Controller -> UI: cell
+    'deactivate Controller
+    UI --> Actor: Ask board information
+    Actor --> UI: maxRows,\n maxColumns,\n Title,\n Column title,\n Row title
+
+    note right of UI: Get the authenticated user (owner of the board) and the associated ecourse user.
+
+
+    UI -> Controller: createBoard(maxRows,maxColumns,Title,Column title,Row title,owner)
+    activate Controller
+        note right of Builder:BoardBuilder é usado para criar uma entidade do tipo Board num estado válido
+        Controller -> Builder: create
+        Controller -> Builder:setMaxRows(maxRows)
+
+        'note right of Controller: Set the rest of the information
+
+        Controller -> Builder:setMaxColumns(maxColumns)
+        Controller -> Builder:setTitle(title)
+        Controller -> Builder:setColumnTitle(columnTitle)
+        Controller -> Builder:setRowTitle(rowTitle)
+        Controller -> Builder:setOwner(owner)
+        Controller -> Builder:createBoard()
+        activate Builder
+            Builder -> Domain: createBoard(maxRows,maxColumns,Title,Column title,Row title,owner)
+            activate Domain
+            Domain -> Domain: setState()
+            note right of Domain: setState() define o board como "active"
+            Domain->Builder: board
+            deactivate Domain
+            Builder -> Controller:board
+        deactivate Builder
+
+        Controller -> Persistence: repositories()
+        activate Persistence
+            note right of Persistence: pode criar repositório em memória ou JPA
+            Persistence -> Factory: create
+            Persistence -> Controller: factory
+        deactivate Persistence
+
+        Controller -> Factory: boards()
+        activate Factory
+            Factory -> Repository: create
+            Factory -> Controller: boardRepository
+        deactivate Factory
+
+        Controller->Repository:save(board)
+        Controller->UI: board
+    deactivate Controller
+
+
+        UI-->Actor: displayBoardInfo
+        deactivate UI
+        Actor->UI: set Permissions
+        activate UI
+        UI-> Controller: defineBoardSharePermissions(board,permissions)
+
+                activate Controller
+                    Controller -> Builder2: create
+                    Controller -> Builder2:setBoard(board)
+                    Controller -> Builder2:setPermissions(permissions)
+                    Controller -> Builder2:createBoardShare()
+                    activate Builder2
+                        Builder2 -> Domain2: createBoardShare(board,permissions)
+                        Domain2->Builder2: boardShare
+                        Builder2 -> Controller:boardShare
+                    deactivate Builder2
+                    Controller -> Persistence: repositories()
+                    activate Persistence
+                        note right of Persistence: pode criar repositório em memória ou JPA
+                        Persistence -> Factory: create
+                        Persistence -> Controller: factory
+                    deactivate Persistence
+                    Controller -> Factory: boardShares()
+                    activate Factory
+                        Factory -> Repository2: create
+                        Factory -> Controller: boardShareRepository
+                    deactivate Factory
+                    Controller->Repository2:save(boardShare)
+                    Controller->UI: boardShare
+
+                                UI-->Actor: displaySharedBoardInfo
+deactivate UI
+@enduml

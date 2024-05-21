@@ -1,0 +1,71 @@
+@startuml
+autonumber
+title SD - List Student Exam Grades
+
+actor Student as ST
+participant ListStudentGradesUI as UI <<presentation>>
+participant ListStudentGradesController as CTRL <<application>>
+participant ListExamsService as gradesService <<service>>
+participant ListCourseEnrollmentsService as enrollmentsService <<service>>
+database EnrollmentRepository as repoEnrollment <<database>>
+participant Enrollment as enrollment <<domain>>
+database CourseRepository as repoCourse <<database>>
+participant Course as course <<domain>>
+database StudentRepository as repoStudent <<database>>
+participant Student as student <<domain>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+participant Exam as exam <<domain>>
+participant ExamRepository as repoExam <<database>>
+participant ExamExecution as examExecution <<domain>>
+participant ExamExecutionRepository as repoExamExecution <<database>>
+
+
+activate ST
+ST -> UI : selects option "List Grades"
+activate UI
+UI -> CTRL: create()
+activate CTRL
+CTRL -> Context: repositories()
+activate Context
+Context --> CTRL: RepositoryFactory
+deactivate Context
+CTRL -> Factory: examExecutions()
+activate Factory
+Factory --> CTRL: ExamExecutionRepository
+deactivate Factory
+CTRL -> Factory: exams()
+activate Factory
+Factory --> CTRL: ExamRepository
+deactivate Factory
+CTRL -> Factory: courses()
+activate Factory
+Factory --> CTRL: CourseRepository
+deactivate Factory
+CTRL -> Factory: enrollments()
+activate Factory
+Factory --> CTRL: EnrollmentRepository
+deactivate Factory
+CTRL -> Factory: students()
+activate Factory
+Factory --> CTRL: StudentRepository
+deactivate Factory
+note right of CTRL: user is authenticated (authz)
+CTRL -> gradesService: create(authz, courseEnrollments, exams)
+deactivate CTRL
+UI -> CTRL: listStudentGrades()
+activate CTRL
+CTRL -> gradesService: listStudentGrades(student)
+activate gradesService
+gradesService -> ExamExecutionRepository: findByStudent(student)
+activate ExamExecutionRepository
+ExamExecutionRepository --> gradesService: Iterable<ExamExecution> examExecutions
+deactivate ExamExecutionRepository
+gradesService --> CTRL: Iterable<ExamExecution> examExecutions
+deactivate gradesService
+CTRL --> UI: Iterable<ExamExecution> examExecutions
+deactivate CTRL
+UI -> ST : shows list of grades
+deactivate UI
+deactivate ST
+@enduml

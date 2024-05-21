@@ -1,0 +1,119 @@
+@startuml
+'https://plantuml.com/object-diagram
+
+title "Domain Model Extract of Class Shedule"
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+hide circle
+hide methods
+
+package Teacher{
+  class Teacher <<root>> {
+  }
+
+  class Acronym <<value object>>{}
+}
+
+package Student{
+  class Student <<entity>>{
+  }
+
+  class MechanographicNumber <<value object>>{}
+}
+
+
+package Class{
+  class Title <<value object>>{}
+  class ClassType <<enum>>{}
+  note bottom of ClassType {
+      extra
+      recurrent
+  }
+
+  class Class <<root>> <<Temporal>>{
+  }
+
+    class TimestampInterval <<value object>>{
+      -start
+      -end
+    }
+}
+
+package Course{
+  class Course <<root>> {
+    - courseID
+    - minEnrolledStudents
+    - maxEnrolledStudents
+  }
+
+  enum State <<enum>> {}
+
+  note bottom of State {
+    open
+    close
+    enroll
+    in_progress
+    closed
+  }
+
+  class title << value object>>{}
+  class description << value object>>{}
+}
+
+package CourseEnrollment{
+  class CourseEnrollment <<root>> {}
+
+  class EnrollmentApplication <<entity>> {
+    -aplicationId
+  }
+
+}
+
+class ScheduleService <<service>> {}
+
+Course.Course --> description: has
+Course.Course --> title: has
+Course.Course --> Course.State: has
+
+MechanographicNumber <--Student.Student: has
+
+Teacher.Teacher --> Acronym : has
+
+Course.Course <-- CourseEnrollment.CourseEnrollment : is of
+CourseEnrollment.EnrollmentApplication --> Student.Student : is of
+CourseEnrollment.EnrollmentApplication <-- CourseEnrollment.CourseEnrollment : has
+
+Student.Student ..> CourseEnrollment.CourseEnrollment : creates application
+Student.Student "*" <-- Class.Class : has participants
+
+Teacher.Teacher "N"-->"N" Course.Course : teaches in
+Teacher.Teacher ..> ScheduleService : schedules recurrent classes
+Teacher.Teacher ..> ScheduleService : reschedules classes
+Teacher.Teacher ..> ScheduleService : schedules extra classes
+
+Teacher.Teacher ..> Class.Class  : schedule a recurring Class
+Teacher.Teacher ..> Class.Class : reschedule a recurring Class
+Teacher.Teacher ..> Class.Class  : schedule an extra Class
+
+Class.Class --> Class.ClassType : has
+Class.Class --> Class.Title : has
+Class.Class --> Class.TimestampInterval : has
+Class.Class --> Course.Course : is of
+Class.Class --> Teacher.Teacher : is lectured by
+
+ScheduleService ..> Class.Class : schedules
+
+
+@enduml

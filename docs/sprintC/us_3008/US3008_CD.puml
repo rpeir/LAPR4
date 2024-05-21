@@ -1,0 +1,178 @@
+@startuml
+
+top to bottom direction
+skinparam linetype ortho
+
+package Board {
+    class Board << root >>{
+      - id: long
+      - title: String
+      - state : State
+      - postIts: Map<Pair<Integer, Integer>, PostIt>
+      + board_title(): String
+      + history(): List<Update>
+      + addPostIt(PostIt, int, int): void
+      + removePostIt(int, int): PostIt
+      + postIts(): Map<Pair<Integer, Integer>, PostIt>
+      + identity(): Long
+      + id(): Long
+      + isActive(): boolean
+      + getPostIt(int, int): PostIt
+      + isFree(int, int): boolean
+    }
+    interface BoardRepository << persistence >> {
+      + findByTitle(String): Optional<Board>
+      + save(Board): Board
+    }
+}
+
+package BoardShared {
+    interface BoardSharedRepository << persistence >> {
+      + findBoardsWithWritePermission(EmailAddress): Iterable<SharedBoard>
+    }
+    class SharedBoard {
+        + board(): Board
+        + user(): EmailAddress
+    }
+}
+
+package BoardUpdate {
+
+    class CellUpdate extends Update {
+      - initPosition: Pair<Integer, Integer>
+      - endPosition: Pair<Integer, Integer>
+      + toDTO(): UpdateDTO
+      + postIt(): PostIt
+      + content(): Content
+      + initPosition(): Pair<Integer, Integer>
+      + endPosition(): Pair<Integer, Integer>
+    }
+
+    enum CellUpdateType << enumeration >> {
+      + INSERT
+      + DELETE
+      + UPDATE
+      + MOVE
+    }
+
+    class Update << root >> {
+      - updateId: Long
+      - timeUpdate: Calendar
+      - user: ECourseUser
+      - undo: boolean
+      + identity(): Long
+      + undo(): void
+      + board(): Board
+      + timeUpdate(): Calendar
+      + isUndone(): boolean
+      + user(): ECourseUser
+    }
+
+    interface UpdateRepository << persistence >> {
+      + findLastTwoByBoardAndPosition(Long, int, int): List<Update>
+      + save(Update): Update
+    }
+
+}
+
+package PostIt {
+    class PostIt << root >> {
+      - postItId: Long
+      - owner: ECourseUser
+      + changePostIt(Content): void
+      + owner(): ECourseUser
+      + content(): Content
+      + identity(): Long
+      + isOwner(EmailAddress): boolean
+    }
+}
+
+package TCP.common {
+    class MessageCodesTCP {
+      + UNDO_LAST_CHANGE_POSTIT: int
+      + AVAILABLE_BOARDS_UNDO: int
+    }
+
+    class MessageFormatTCP {
+      + sendMessage(int, int, byte[]): void
+      + sendMessage(int, int, byte[], Long): void
+      + sendMessage(int, int, String): void
+      + sendMessage(int, int, String, Long): void
+      + readMessage(): MessageTCP
+    }
+
+    class MessageTCP {
+      + sessionID(): long
+      + data(): byte[]
+      + code(): int
+    }
+}
+package TCP.server {
+    class UndoLastChangePostItTCPServerController << TCP Server Controller >> {
+      + listAvailableBoards(MessageTCP): String
+      + undoLastChangePostIt(String, int, int, long): void
+    }
+}
+
+package TCP.client {
+    class UndoLastChangePostItTCPClientController << TCP Client Controller >> {
+      + listAvailableBoards(): List<String>
+      + undoLastChangePostIt(String, int, int): void
+    }
+
+    class UndoLastChangePostItUI << presentation >> {
+    }
+}
+
+package PostIt {
+    class UndoLastChangePostItController << application >> {
+      + undoLastChangePostIt(EmailAddress, String, int, int): void
+      + listAvailableBoards(EmailAddress): List<Board>
+    }
+
+    class UndoLastChangePostItService << service >> {
+      + undoLastChangePostIt(Board, int, int, EmailAddress): void
+    }
+
+    class Content << value object >> {
+      - content: byte[]
+      + MAXIMUM_PACKET_SIZE: int
+      + type(): ContentType
+      + getContent(String): Object
+    }
+
+    enum ContentType << enumeration >> {
+      + TEXT:
+      + IMAGE:
+      + values(): ContentType[]
+      + valueOf(String): ContentType
+    }
+}
+
+
+BoardUpdate.CellUpdate "1" *--> BoardUpdate.CellUpdateType
+BoardUpdate.CellUpdate "1" *--> PostIt.Content
+BoardUpdate.CellUpdate "1" *--> PostIt.PostIt
+Update "1" *--> Board.Board
+PostIt.Content "1" *--> ContentType
+PostIt.PostIt "1" *--> PostIt.Content
+UndoLastChangePostItController ..> BoardRepository
+UndoLastChangePostItController ..> BoardSharedRepository
+UndoLastChangePostItController ..> UpdateRepository
+UndoLastChangePostItService ..> BoardRepository
+UndoLastChangePostItService ..> UpdateRepository
+UndoLastChangePostItUI --> UndoLastChangePostItTCPClientController
+TCP.client ..> TCP.common
+TCP.server ..> TCP.common
+MessageFormatTCP ..> MessageTCP
+MessageFormatTCP ..> MessageCodesTCP
+Board.Board --> "*" PostIt.PostIt
+Board.Board --> "*" Update
+BoardRepository --> Board.Board
+BoardSharedRepository ..> BoardShared.SharedBoard
+BoardShared.SharedBoard "1" --> Board.Board
+UndoLastChangePostItTCPServerController ..> UndoLastChangePostItController
+UndoLastChangePostItController ..> UndoLastChangePostItService
+UndoLastChangePostItService ..> UpdateRepository
+UndoLastChangePostItService ..> BoardRepository
+@enduml

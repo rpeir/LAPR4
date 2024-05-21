@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+title As a User I want to list all the courses that are a available for me
+autonumber
+skinparam handwritten true
+skinparam monochrome true
+actor User
+participant System
+
+activate User
+User -> System: Request to see all available Courses
+activate System
+System --> User : show him the courses that are available to him
+deactivate System
+deactivate User
+
+
+@enduml

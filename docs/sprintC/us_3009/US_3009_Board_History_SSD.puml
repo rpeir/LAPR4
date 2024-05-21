@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "User" as MG
+
+activate MG
+MG -> ":System" : selects option "View Board History"
+activate ":System"
+":System"--> MG : displays the list of  boards and ask for the board to view
+deactivate ":System"
+MG -> ":System": types the information
+activate ":System"
+":System"--> MG : displays the history and confirms operation success
+deactivate ":System"
+
+@enduml

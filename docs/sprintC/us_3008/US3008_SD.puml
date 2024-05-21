@@ -1,0 +1,165 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam BoxPadding 30
+autonumber
+
+actor "ECourseUser" as User
+box ECourse TCP Client App
+participant UndoLastChangePostItUI as UI <<presentation>>
+participant "UndoLastChangePostIt\nTCPClientController" as ClientController <<TCP Client Controller>>
+end box
+box ECourse TCP Server App
+participant "UndoLastChangePostIt\nTCPServerController" as ServerController <<TCP Server Controller>>
+participant UndoLastChangePostItController as DomainCTRL <<application>>
+participant ShareBoardService <<service>>
+database BoardSharedRepository as SharedRepo <<repository>>
+participant "list\nList<Board>" as BoardList
+participant "UndoLastChangePostItService" as Service <<service>>
+participant "Board" as Board <<domain>>
+participant "PostIt" as PostIt <<domain>>
+participant "lastUpdate\n:Update" as Update <<domain>>
+database BoardRepository as BoardRepo <<repository>>
+database UpdateRepository as UpdateRepo <<repository>>
+end box
+
+activate UI
+User -> UI: select option "Undo Last Change of a PostIt"
+
+UI -> ClientController: create()
+UI -> ClientController: listAvailableBoards()
+
+activate ClientController
+
+ClientController --> ServerController: TCP connection
+
+activate ServerController
+
+note right of ServerController
+    verify if the user is logged in and retrieve the email, using the sessionManager
+end note
+
+ServerController -> DomainCTRL: listAvailableBoards(email)
+
+activate DomainCTRL
+
+DomainCTRL -> ShareBoardService : userBoardsWithWritePermission(email)
+activate ShareBoardService
+
+ShareBoardService -> SharedRepo : findBoardsWithWritePermission(email)
+activate SharedRepo
+SharedRepo --> ShareBoardService : List<SharedBoard>
+deactivate SharedRepo
+ShareBoardService -> BoardList **: create()
+loop for each sharedBoard
+ShareBoardService -> BoardList : add(sharedBoard.board())
+end loop
+
+ShareBoardService --> DomainCTRL : boards : List<Board>
+deactivate ShareBoardService
+
+DomainCTRL --> ServerController : boards : List<Board>
+deactivate DomainCTRL
+ServerController --> ClientController : TCP Connection
+deactivate ServerController
+
+ClientController -> UI: list of boards
+deactivate ClientController
+
+UI --> User: list available boards
+
+User -> UI: select board
+
+User -> UI: select postit (row, column)
+
+UI -> ClientController: undoLastChangePostIt(boardTitle, row, column)
+activate ClientController
+ClientController --> ServerController : TCP Connection
+
+activate ServerController
+
+note right of ServerController
+    verify if the user is logged in and retrieve the email, using the sessionManager
+end note
+
+ServerController -> DomainCTRL: undoLastChangePostIt(email, boardTitle, row, column)
+activate DomainCTRL
+
+DomainCTRL -> BoardRepo : findByTitle(boardTitle)
+activate BoardRepo
+BoardRepo --> DomainCTRL: Board
+deactivate BoardRepo
+
+DomainCTRL -> Service : undoLastChangePostIt(board, row, column, email)
+activate Service
+
+Service -> UpdateRepo : findLastTwoByBoardAndPosition(board.id(), row, column)
+activate UpdateRepo
+
+UpdateRepo --> Service : updates : List<Update>
+deactivate UpdateRepo
+
+alt updates.isEmpty()
+
+note right of Service
+    throw exception, there is no update to undo
+end note
+
+end alt
+
+note right of Service
+    verify if the user is the owner of the update postit
+end note
+
+alt lastUpdate.type() == INSERT
+    note right of Service
+        verify if the board really has the postit in the position and if it is the same postit
+    end note
+    Service -> Board : removePostIt(row, column)
+else  lastUpdate.type() == UPDATE
+    note right of Service
+        verify if the board really has the postit in the position and if it is the same postit
+    end note
+    Service -> Board : getPostIt(row, column)
+    activate Board
+    Board -> Service : postit
+    deactivate Board
+    Service -> PostIt : changePostIt(updateToRestore.content());
+else lastUpdate.type() == DELETE
+    note right of Service
+        verify if the board does not have a postit in the same position
+    end note
+    Service -> Board : addPostIt(updateToRestore.postIt(), updateToRestore.initPosition().a, updateToRestore.initPosition().b)
+else lastUpdate.type() == MOVE
+    note right of Service
+        verify if the old position is free
+    end note
+    Service -> Board : removePostIt(lastUpdate.endPosition().a, lastUpdate.endPosition().b)
+    Service -> Board : addPostIt(updateToRestore.postIt(), updateToRestore.initPosition().a, updateToRestore.initPosition().b)
+end alt
+
+note right of Service
+    throw exception
+end note
+
+Service -> BoardRepo : save(board)
+
+Service -> Update : undo()
+
+Service -> UpdateRepo : save(update)
+
+Service --> DomainCTRL :
+deactivate Service
+
+DomainCTRL --> ServerController :
+deactivate DomainCTRL
+
+ServerController --> ClientController : TCP Connection
+deactivate ServerController
+
+ClientController --> UI: sucess
+deactivate ClientController
+
+UI --> User: show sucess
+deactivate UI
+
+@enduml

@@ -1,0 +1,443 @@
+@startuml
+title "Domain Model"
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+hide circle
+hide methods
+
+
+package SystemUser{
+  class SystemUser <<root>>{
+  }
+
+  class email << value object>>{}
+  class password << value object>>{}
+  class firstname << value object>>{}
+  class lastname << value object>>{}
+  class username << value object>>{}
+
+  class Role <<value object>>{}
+
+}
+
+package eCourseUser{
+  class eCourseUser <<root>>{
+  }
+
+  class ShortName <<value object>>{}
+  class FullName <<value object>>{}
+  class BirthDate <<value object>>{}
+  class Email <<value object>>{}
+  class TaxPayerNumber <<value object>>{}
+}
+
+package Teacher{
+  class Teacher <<root>> {
+  }
+
+  class Acronym <<value object>>{}
+}
+
+package Meeting{
+  entity Meeting <<entity root>>{
+  }
+
+  class TimestampInterval <<value object>>{
+    -start
+    -end
+  }
+}
+
+package MeetingInvite{
+    entity Invite <<root>>{}
+    enum Status <<enum>>{}
+    note bottom of Status {
+        accept
+        reject
+        pending
+    }
+}
+
+package Student{
+  class Student <<entity>>{
+  }
+
+  class MechanographicNumber <<value object>>{}
+}
+
+package Exam{
+  class Exam <<root>>{
+    - description
+    - openDate
+    - closeDate
+  }
+
+  class ExamHeader <<entity>> {
+    - description
+  }
+
+  class GradeType <<enum>> {}
+
+  note bottom of GradeType {
+    none
+    on_submission
+    after_closing
+  }
+
+  class FeedbackType <<enum>> {}
+
+  note bottom of FeedbackType {
+    none
+    on_submission
+    after_closing
+  }
+
+  class Title <<value object>>{}
+
+  class Section <<entity>> {
+      -description
+    }
+}
+
+package Question{
+  class Question <<root>> {}
+  class QuestionType <<enum>> {}
+
+  note bottom of QuestionType {
+    -Matching
+    -True or False
+    -Numerical
+    -MultiChoice
+    -Select Missing Words
+    -Short answer
+  }
+
+  class Solution <<value object>> {}
+}
+
+
+package Board{
+  class Board <<root>> {
+    - maxColumns
+    - maxRows
+  }
+
+  class Title <<value object>> {}
+
+  class Column <<entity>>{
+    - title
+    - id
+  }
+
+  class Row <<entity>>{
+    - title
+    - id
+  }
+
+  class State <<enum>> {}
+
+  note bottom of State {
+    active
+    archived
+  }
+}
+
+package BoardUpdate {
+  class Update <<root>> {
+    - timestamp
+  }
+
+  ' class UpdateType <<enum>> {}
+
+  class BoardUpdate <<entity>> {}
+
+  class CellUpdate <<entity>> {}
+
+  class BoardUpdateType <<enum>> {}
+
+  class CellUpdateType <<enum>> {}
+
+  class BoardChange <<value object>> {}
+
+}
+
+package PostIt {
+  class PostIt <<root>>{}
+
+  class ContentType <<enum>>{}
+
+  note bottom of ContentType {
+    text
+    image
+  }
+
+  class Content <<value object>>{
+    -timestamp
+  }
+}
+
+package BoardShare {
+  class BoardShare <<root>>{}
+
+  class UserPermission <<enum>>{}
+
+    note bottom of UserPermission {
+        read
+        write
+    }
+
+}
+
+package CourseEnrollment{
+  class CourseEnrollment <<root>> {}
+
+  class EnrollmentApplication <<entity>> {
+    -aplicationId
+  }
+
+}
+
+package Course{
+  class Course <<root>> {
+    - courseID
+    - minEnrolledStudents
+    - maxEnrolledStudents
+  }
+
+  enum State <<enum>> {}
+
+  note bottom of State {
+    open
+    close
+    enroll
+    in_progress
+    closed
+  }
+
+  class title << value object>>{}
+  class description << value object>>{}
+}
+
+package TeacherInCharge{
+  class TeacherInCharge <<entity>>{
+  }
+}
+
+package Class{
+  class Title <<value object>>{}
+  class ClassType <<enum>>{}
+  note bottom of ClassType {
+      extra
+      recurrent
+  }
+
+  class Class <<root>> <<Temporal>>{
+  }
+
+    class TimestampInterval <<value object>>{
+      -start
+      -end
+    }
+
+    class EndingDate <<value object>>
+}
+
+package ExamExecution{
+  class ExamExecution <<root>> {
+    -date
+  }
+
+  class ExamFeedback <<value object>>{
+    -description
+    -grade
+  }
+
+}
+
+package QuestionAnswer{
+    class QuestionFeedback <<value object>>{
+        -description
+        -grade
+      }
+
+    class QuestionAnswer <<root>> {
+    }
+
+    class Answer <<value object>> {}
+}
+
+package Manager {
+  class Manager <<root>> {}
+}
+
+class ScheduleService <<service>> {}
+
+class ViewExamService <<service>> {}
+'class ViewGradesService <<service>> {}
+'class ShareBoardService <<service>> {}
+
+SystemUser.SystemUser --> email: has
+SystemUser.SystemUser --> firstname: has
+SystemUser.SystemUser --> lastname: has
+SystemUser.SystemUser --> username: has
+SystemUser.SystemUser --> password: has
+SystemUser.SystemUser --> Role: has
+
+Exam.Exam --> ExamHeader: has
+Exam.Exam --> Exam.Title: has
+Exam.Exam --> "*" Exam.Section: has
+Exam.Exam --> Course.Course : is of
+Exam.ExamHeader --> FeedbackType : has
+Exam.ExamHeader --> GradeType : has
+
+Course.Course --> description: has
+Course.Course --> title: has
+Course.Course --> Course.State: has
+
+MechanographicNumber <--Student.Student: has
+
+TeacherInCharge.TeacherInCharge --> Course.Course: has
+TeacherInCharge.TeacherInCharge --> Teacher.Teacher: is
+Teacher.Teacher --> Acronym : has
+
+Course.Course <-- CourseEnrollment.CourseEnrollment : is of
+CourseEnrollment.EnrollmentApplication --> Student.Student : is of
+CourseEnrollment.EnrollmentApplication <-- CourseEnrollment.CourseEnrollment : has
+
+ViewExamService ..> CourseEnrollment.CourseEnrollment : view
+ViewExamService ..> Exam.Exam : view exam
+
+'ShareBoardService ..> Board.Board : view
+
+ExamExecution.ExamExecution --> Exam.Exam : refers to
+QuestionAnswer.QuestionAnswer --> QuestionAnswer.QuestionFeedback : has
+ExamExecution.ExamExecution --> ExamExecution.ExamFeedback : has
+ExamExecution.ExamExecution --> QuestionAnswer.QuestionAnswer : has
+QuestionAnswer.QuestionAnswer --> Question.Question : is of a
+QuestionAnswer.QuestionAnswer --> QuestionAnswer.Answer : has
+
+Manager.Manager ..> SystemUser.SystemUser : creates
+Manager.Manager ..> eCourseUser.eCourseUser : creates
+Manager.Manager ..> SystemUser.SystemUser : enable/disable
+Manager.Manager ..> SystemUser.SystemUser : view all
+Manager.Manager ..> eCourseUser.eCourseUser : view all
+Manager.Manager ..> Course.Course : create
+Manager.Manager ..> Course.Course : change state
+Manager.Manager ..> Course.Course : view state
+Manager.Manager ..> Course.Course : view all
+Manager.Manager ..> CourseEnrollment.CourseEnrollment : enroll students
+Manager.Manager ..> CourseEnrollment.CourseEnrollment : view all
+Manager.Manager ..> CourseEnrollment.CourseEnrollment : creates
+Manager.Manager ..> CourseEnrollment.CourseEnrollment : accepts/rejects application
+Manager.Manager ..> TeacherInCharge.TeacherInCharge : set teacher in charge of a course
+
+Student.Student ..> CourseEnrollment.CourseEnrollment : creates application
+Student.Student "*" <-- Class.Class : has participants
+Student.Student ..> ViewExamService : view exams
+Student.Student "1"..>"1" ExamExecution.ExamExecution: execute
+'Student.Student ..> ViewGradesService
+Student.Student ..> ExamExecution.ExamExecution: view grade
+
+Teacher.Teacher "N"-->"N" Course.Course : teaches in
+Teacher.Teacher ..> ScheduleService : schedules recurrent classes
+Teacher.Teacher ..> ScheduleService : reschedules classes
+Teacher.Teacher ..> ScheduleService : schedules extra classes
+
+Teacher.Teacher ..> Exam.Exam : creates
+Teacher.Teacher ..> Exam.Exam: views course exams
+Teacher.Teacher ..> Class.Class  : schedule a recurring Class
+Teacher.Teacher ..> Class.Class : reschedule a recurring Class
+Teacher.Teacher ..> Class.Class  : schedule an extra Class
+Teacher.Teacher "N"-->"N" Exam.Exam : creates
+'Teacher.Teacher ..> ViewExamService
+Teacher.Teacher ..> ExamExecution.ExamExecution: view grade
+Teacher.Teacher "N"-->"N" Exam.Exam: views
+
+
+Class.Class --> Class.ClassType : has
+Class.Class --> Class.Title : has
+Class.Class --> Class.TimestampInterval : has
+Class.Class --> Course.Course : is of
+Class.Class --> Teacher.Teacher : is lectured by
+Class.Class --> Class.EndingDate : has
+
+Exam.Section --> Question.Question: has
+Question.Question --> QuestionType : has
+Question.Question --> Solution : has
+
+Teacher.Teacher --|> eCourseUser.eCourseUser : is a
+Student.Student --|> eCourseUser.eCourseUser : is a
+
+eCourseUser.eCourseUser --> ShortName : has
+eCourseUser.eCourseUser --> FullName : has
+eCourseUser.eCourseUser --> BirthDate : has
+eCourseUser.eCourseUser --> Email : has
+eCourseUser.eCourseUser --> TaxPayerNumber : has
+eCourseUser.eCourseUser ..> ScheduleService : schedules meeting
+eCourseUser.eCourseUser ..> MeetingInvite.Invite : accept/decline
+eCourseUser.eCourseUser ..> MeetingInvite.Invite : receives
+eCourseUser.eCourseUser ..> Board.Board: archive
+eCourseUser.eCourseUser ..> Course.Course : view all
+eCourseUser.eCourseUser ..> ScheduleService : schedules meeting
+eCourseUser.eCourseUser ..> BoardShare.BoardShare : create
+eCourseUser.eCourseUser ..> PostIt.PostIt : create
+eCourseUser.eCourseUser ..> PostIt.PostIt : update
+eCourseUser.eCourseUser ..> SystemUser.SystemUser : has a
+
+ScheduleService ..> Meeting.Meeting : schedules
+ScheduleService ..> Class.Class : schedules
+
+MeetingInvite.Invite --> Meeting.Meeting : is of
+MeetingInvite.Invite --> MeetingInvite.Status : has
+MeetingInvite.Invite --> eCourseUser.eCourseUser : is of
+
+Meeting.Meeting --> eCourseUser.eCourseUser : owned by
+Meeting.Meeting --> Meeting.TimestampInterval : has
+
+Board.Board --> Board.Title : has
+Board.Board --> "*" PostIt.PostIt : has
+Board.Board --> "*" Board.Column : has
+Board.Board --> "*" Board.Row : has
+Board.Board --> eCourseUser.eCourseUser : owned by
+Board.Board --> Board.State : has
+Board.Board ..> BoardShare.BoardShare : notifies user
+Board.Board ..> eCourseUser.eCourseUser : created by
+Board.Board ..> eCourseUser.eCourseUser : viewed by
+
+PostIt.PostIt --> PostIt.Content : has
+PostIt.Content --> PostIt.ContentType : has
+PostIt.Content "N"-->"1" eCourseUser.eCourseUser : created by
+
+
+Board.Board --> "*" BoardUpdate.Update : has
+BoardUpdate.Update <|-- BoardUpdate.CellUpdate : is a
+BoardUpdate.Update <|-- BoardUpdate.BoardUpdate : is a
+BoardUpdate.Update --> eCourseUser.eCourseUser : is made by
+
+
+'BoardUpdate.Update -> BoardUpdate.UpdateType : has
+
+BoardUpdate.CellUpdate --> BoardUpdate.CellUpdateType : has
+BoardUpdate.BoardUpdate --> BoardUpdate.BoardUpdateType : has
+BoardUpdate.BoardUpdate --> BoardUpdate.BoardChange : has
+BoardUpdate.CellUpdate --> PostIt.PostIt : is relative to
+BoardUpdate.CellUpdate --> PostIt.Content : has
+
+BoardShare.BoardShare "N"-->"1" Board.Board : shares
+BoardShare.BoardShare --> eCourseUser.eCourseUser : has
+BoardShare.BoardShare --> BoardShare.UserPermission : has
+
+Student.Student <-- ExamExecution.ExamExecution : executes
+@enduml

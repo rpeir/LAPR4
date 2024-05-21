@@ -1,0 +1,442 @@
+@startuml
+
+top to bottom direction
+skinparam linetype ortho
+
+class Course {
+  + Course(String, String, int, int, String, String): 
+  + Course(): 
+  - maxStudents: int
+  - teacherList: Set<Teacher>
+  - courseTitle: Designation
+  - description: Description
+  - closeDate: Date
+  - courseId: Long
+  - courseCode: String
+  - state: State
+  - minStudents: int
+  - numberStudentsMeetsMinimumRequirements(int, int): boolean
+  + setCourseCode(String): void
+  + closeDate(): Date
+  + toString(): String
+  + setNumberStudents(int, int): void
+  + isClosed(): boolean
+  + addTeachers(Set<Teacher>): void
+  + identity(): String
+  + isOpen(): boolean
+  - courseCodeMeetsMinimumRequirements(String): boolean
+  + sameAs(Object): boolean
+  + closeCourse(): void
+  + hasIdentity(String): boolean
+  - setCloseDate(String): void
+  + isEnrollOrInProgress(): boolean
+  + isAvailableForEnrollments(): boolean
+  + teachersContains(EmailAddress): boolean
+  + openCourse(): void
+  + changeEnrollmentState(String): void
+  + equals(Object): boolean
+}
+class CourseEnrollment {
+  + CourseEnrollment(): 
+  + CourseEnrollment(Course): 
+  - courseEnrollmentId: Long
+  - enrollmentApplication: Set<EnrollmentApplication>
+  - course: Course
+  + enrollmentApplications(): Set<EnrollmentApplication>
+  + sameAs(Object): boolean
+  + identity(): String
+  + enrolledStudents(): List<Student>
+  + info(EnrollmentApplication): List<String>
+  + hasPendingApplications(): boolean
+  + addApplication(Student): EnrollmentApplication
+  + course(): Course
+  + addApplication(EnrollmentApplication): void
+}
+interface CourseEnrollmentRepository << interface >> {
+  + findByCourse(Course): Optional<CourseEnrollment>
+  + hasPendingEnrollmentApplications(): Iterable<CourseEnrollment>
+  + coursesImEnrolled(EmailAddress): Iterable<Course>
+  + findEnrollmentsByStudent(Student): Iterable<CourseEnrollment>
+}
+interface CourseRepository << interface >> {
+  + closeCourses(): Iterable<Course>
+  + openCourses(): Iterable<Course>
+  + findAll(): Iterable<Course>
+  + enrollOrInProgressCourses(): Iterable<Course>
+  + findByTeacher(EmailAddress): Iterable<Course>
+  + availableCourses(): Iterable<Course>
+  + availableCoursesStudent(): Iterable<Course>
+  + availableCoursesTeacher(EmailAddress): Iterable<Course>
+}
+class EnrollmentApplication {
+  + EnrollmentApplication(Student, CourseEnrollment): 
+  + EnrollmentApplication(Student, Status): 
+  + EnrollmentApplication(): 
+  - student: Student
+  - status: Status
+  - applicationId: Long
+  - courseEnrollment: CourseEnrollment
+  + acceptApplication(): void
+  + isAccepted(): boolean
+  + rejectApplication(): void
+  + isRejected(): boolean
+  + info(): List<String>
+  + isPending(): boolean
+  + sameAs(Object): boolean
+  + identity(): Long
+  + student(): Student
+}
+class Exam {
+  # Exam(): 
+  # Exam(String, ExamHeader, Set<Section>, Course): 
+  - id: Long
+  - course: Course
+  - examTitle: String
+  - examHeader: ExamHeader
+  - sections: Set<Section>
+  - setCourse(Course): void
+  + sections(): Iterable<Section>
+  + header(): ExamHeader
+  + identity(): Long
+  + title(): String
+  - setExamHeader(ExamHeader): void
+  - setSections(Set<Section>): void
+  + sameAs(Object): boolean
+  + course(): Course
+  + isAvaliable(): boolean
+  - setTitle(String): void
+  + hashCode(): int
+  + equals(Object): boolean
+  + toString(): String
+}
+class ExamExecution {
+  # ExamExecution(Calendar, Student, Exam, List<QuestionAnswer>): 
+  # ExamExecution(): 
+  - beginDate: Calendar
+  - grade: Float
+  - examExecutionId: Long
+  - student: Student
+  - exam: Exam
+  - questionAnswers: List<QuestionAnswer>
+  # calculateGrade(): Float
+  + identity(): Long
+  + sameAs(Object): boolean
+  + toString(): String
+  + grade(): float
+  + exam(): Exam
+  + beginDateString(): String
+  + student(): Student
+  + feedback(): String
+}
+class ExamExecutionBuilder {
+  + ExamExecutionBuilder(): 
+  - beginDate: Calendar
+  - student: Student
+  - questionAnswers: List<QuestionAnswer>
+  - exam: Exam
+  + build(): ExamExecution
+  + ofStudent(Student): ExamExecutionBuilder
+  + ofExam(Exam): ExamExecutionBuilder
+  + withQuestionAnswer(QuestionAnswer): ExamExecutionBuilder
+}
+interface ExamExecutionRepository << interface >> {
+  + findByExam(Exam): Iterable<ExamExecution>
+  + findByCourse(Course): Iterable<ExamExecution>
+  + findByStudent(Student): Iterable<ExamExecution>
+}
+class ExamHeader {
+  # ExamHeader(): 
+  + ExamHeader(String, GradeType, FeedbackType): 
+  - gradeType: GradeType
+  - feedbackType: FeedbackType
+  - description: Description
+  - setDescription(String): void
+  + gradeType(): GradeType
+  + feedbackType(): FeedbackType
+  + equals(Object): boolean
+  + toString(): String
+}
+interface ExamRepository << interface >> {
+  + findByCourse(Course): Iterable<Exam>
+}
+enum FeedbackType << enumeration >> {
+  + FeedbackType(): 
+  + AFTER_CLOSING: 
+  + ON_SUBMISSION: 
+  + NONE: 
+  + valueOf(String): FeedbackType
+  + values(): FeedbackType[]
+}
+enum GradeType << enumeration >> {
+  + GradeType(): 
+  + NONE: 
+  + ON_SUBMISSION: 
+  + AFTER_CLOSING: 
+  + valueOf(String): GradeType
+  + values(): GradeType[]
+}
+class MatchingQuestion {
+  # MatchingQuestion(): 
+  + MatchingQuestion(String, String, Map<String, String>, Map<Integer, String>, Map<String, Integer>): 
+  - mqSolution: Map<String, Integer>
+  - groupB: Map<Integer, String>
+  - groupA: Map<String, String>
+  - validateAnswer(Map<String, Integer>): void
+  + answer(Map<String, Integer>, float): MatchingQuestionAnswer
+  + toString(): String
+  + groupA(): Map<String, String>
+  + solution(): Map<String, Integer>
+  + groupB(): Map<Integer, String>
+}
+class MatchingQuestionAnswer {
+  + MatchingQuestionAnswer(MatchingQuestion, QuestionFeedback, Map<String, Integer>): 
+  # MatchingQuestionAnswer(): 
+  - mqAnswer: Map<String, Integer>
+  + answer(): Map<String, Integer>
+}
+class MissingWordQuestion {
+  # MissingWordQuestion(): 
+  + MissingWordQuestion(String, String, Map<String, ArrayList<String>>, Map<String, String>, String): 
+  ~ optionsMap: Map<String, ArrayList<String>>
+  ~ msSolutions: Map<String, String>
+  - missingPhrase: String
+  + options(): Map<String, ArrayList<String>>
+  + answer(Map<String, String>, float): MissingWordQuestionAnswer
+  + missingPhrase(): String
+  + solution(): Map<String, String>
+  + toString(): String
+  - validateAnswers(Map<String, String>): void
+}
+class MissingWordQuestionAnswer {
+  # MissingWordQuestionAnswer(): 
+  + MissingWordQuestionAnswer(MissingWordQuestion, QuestionFeedback, Map<String, String>): 
+  - mwAnswer: Map<String, String>
+  + answer(): Map<String, String>
+}
+class MultipleChoiceQuestion {
+  # MultipleChoiceQuestion(): 
+  + MultipleChoiceQuestion(String, String, Set<String>, Map<String, String>): 
+  ~ options: Map<String, String>
+  - mcSolution: Set<String>
+  + solution(): Set<String>
+  + answer(Set<String>, float): MultipleChoiceQuestionAnswer
+  + options(): Map<String, String>
+  + toString(): String
+  - validateAnswer(Set<String>): void
+}
+class MultipleChoiceQuestionAnswer {
+  # MultipleChoiceQuestionAnswer(): 
+  + MultipleChoiceQuestionAnswer(MultipleChoiceQuestion, QuestionFeedback, Set<String>): 
+  - mcAnswer: Set<String>
+  + answer(): Set<String>
+}
+class NumericalQuestion {
+  + NumericalQuestion(String, String, int, int): 
+  # NumericalQuestion(): 
+  - nqSolution: int
+  - acceptanceError: int
+  + answer(int, float): NumericalQuestionAnswer
+  + toString(): String
+  + solution(): Integer
+}
+class NumericalQuestionAnswer {
+  # NumericalQuestionAnswer(): 
+  + NumericalQuestionAnswer(NumericalQuestion, QuestionFeedback, int): 
+  - nAnswer: int
+  + answer(): Integer
+}
+class Question {
+  + Question(String, String): 
+  # Question(): 
+  - theme: QuestionTheme
+  - questionDescription: String
+  - questionId: Long
+  + questionDescription(): String
+  + toString(): String
+  + equals(Object): boolean
+  + sameAs(Object): boolean
+  + identity(): Long
+  + theme(): String
+}
+class QuestionAnswer<A, Q> {
+  + QuestionAnswer(Q, QuestionFeedback): 
+  # QuestionAnswer(): 
+  - question: Question
+  - questionFeedback: QuestionFeedback
+  - id: Long
+  + feedback(): QuestionFeedback
+  + toString(): String
+  + sameAs(Object): boolean
+  + identity(): Long
+  + question(): Question
+  + answer(): A
+}
+interface QuestionAnswerRepository << interface >>
+class QuestionFeedback {
+  # QuestionFeedback(): 
+  # QuestionFeedback(String, float): 
+  - description: String
+  - grade: float
+  + feedback(): String
+  + valueOf(String, float): QuestionFeedback
+  + grade(): float
+}
+interface QuestionRepository << interface >> {
+  + findAllMultipleChoiceQuestionsByTheme(String): List<Question>
+  + findAllTrueOrFalseQuestionsByTheme(String): List<Question>
+  + findAllNumericalQuestionsByTheme(String): List<Question>
+  + findAllMatchingQuestionsByTheme(String): List<Question>
+  + findAllMissingWordQuestionsByTheme(String): List<Question>
+  + findAllSingleChoiceQuestionsByTheme(String): List<Question>
+  + findAllShortAnswerQuestionsByTheme(String): List<Question>
+}
+class QuestionTheme {
+  + QuestionTheme(): 
+  + QuestionTheme(String): 
+  - questionSubject: String
+  + questionSubject(): String
+  + toString(): String
+}
+class Section {
+  # Section(): 
+  + Section(String, Set<Question>, Map<Question, Float>): 
+  - description: Description
+  - id: Long
+  - questionWeights: Map<Question, Float>
+  - questions: Set<Question>
+  + hashCode(): int
+  + sameAs(Object): boolean
+  + description(): String
+  + equals(Object): boolean
+  + grade(Question): float
+  - setQuestions(Set<Question>): void
+  + toString(): String
+  + identity(): Long
+  + questions(): Iterable<Question>
+  - setQuestionGrades(Map<Question, Float>): void
+  - setDescription(String): void
+}
+class ShortAnswerQuestion {
+  # ShortAnswerQuestion(): 
+  + ShortAnswerQuestion(String, String, Map<String, Integer>): 
+  - saSolution: Map<String, Integer>
+  + solution(): Map<String, Integer>
+  + answer(String, float): ShortAnswerQuestionAnswer
+  + toString(): String
+}
+class ShortAnswerQuestionAnswer {
+  # ShortAnswerQuestionAnswer(): 
+  + ShortAnswerQuestionAnswer(ShortAnswerQuestion, QuestionFeedback, String): 
+  - saAnswer: String
+  + answer(): String
+}
+class SingleChoiceQuestion {
+  + SingleChoiceQuestion(String, String, Map<String, String>, String): 
+  # SingleChoiceQuestion(): 
+  ~ options: Map<String, String>
+  - scSolution: String
+  + solution(): String
+  + options(): Map<String, String>
+  + toString(): String
+  + answer(String, float): SingleChoiceQuestionAnswer
+}
+class SingleChoiceQuestionAnswer {
+  + SingleChoiceQuestionAnswer(SingleChoiceQuestion, QuestionFeedback, String): 
+  + SingleChoiceQuestionAnswer(): 
+  - scAnswer: String
+  + answer(): String
+}
+class SummativeExam {
+  # SummativeExam(): 
+  + SummativeExam(String, ExamHeader, Set<Section>, Course, Date, Date): 
+  - openDate: Date
+  - closeDate: Date
+  + closeDate(): Date
+  + sameAs(Object): boolean
+  + isAvaliable(): boolean
+  + openDate(): Date
+  - setOpenCloseDates(Date, Date): void
+}
+class TakeExamController {
+  + TakeExamController(): 
+  - examExecutions: ExamExecutionRepository
+  - courseEnrollments: CourseEnrollmentRepository
+  - authz: AuthorizationService
+  - exams: ExamRepository
+  - students: StudentRepository
+  - builder: ExamExecutionBuilder
+  + availableExams(): List<Exam>
+  + startExam(Exam): void
+  + answerShortAnswerQuestion(ShortAnswerQuestion, String, float): void
+  + finishExam(): ExamExecution
+  + answerTrueFalseQuestion(TrueOrFalseQuestion, boolean, float): void
+  + answerNumericQuestion(NumericalQuestion, int, float): void
+  + answerMissingWordQuestion(MissingWordQuestion, Map<String, String>, float): void
+  + answerMatchingQuestion(MatchingQuestion, Map<String, Integer>, float): void
+  + answerMultipleChoiceQuestion(MultipleChoiceQuestion, Set<String>, float): void
+  + answerSingleChoiceQuestion(SingleChoiceQuestion, String, float): void
+}
+class TrueOrFalseQuestion {
+  + TrueOrFalseQuestion(String, String, String): 
+  # TrueOrFalseQuestion(): 
+  ~ tfSolution: boolean
+  + solution(): Boolean
+  + toString(): String
+  - buildSolution(String): boolean
+  + answer(boolean, float): TrueOrFalseQuestionAnswer
+}
+class TrueOrFalseQuestionAnswer {
+  + TrueOrFalseQuestionAnswer(): 
+  + TrueOrFalseQuestionAnswer(TrueOrFalseQuestion, QuestionFeedback, boolean): 
+  - tfAnswer: boolean
+  + answer(): Boolean
+}
+
+CourseEnrollment             "1" *-[#595959,plain]-> "course\n1" Course                       
+CourseEnrollment              -[#595959,dashed]->  EnrollmentApplication        : "«create»"
+CourseEnrollment             "1" *-[#595959,plain]-> "enrollmentApplication\n*" EnrollmentApplication        
+EnrollmentApplication        "1" *-[#595959,plain]-> "courseEnrollment\n1" CourseEnrollment             
+Exam                         "1" *-[#595959,plain]-> "course\n1" Course                       
+Exam                         "1" *-[#595959,plain]-> "examHeader\n1" ExamHeader                   
+Exam                         "1" *-[#595959,plain]-> "sections\n*" Section                      
+ExamExecution                "1" *-[#595959,plain]-> "exam\n1" Exam                         
+ExamExecution                "1" *-[#595959,plain]-> "questionAnswers\n*" QuestionAnswer               
+ExamExecutionBuilder         "1" *-[#595959,plain]-> "exam\n1" Exam                         
+ExamExecutionBuilder          -[#595959,dashed]->  ExamExecution                : "«create»"
+ExamExecutionBuilder         "1" *-[#595959,plain]-> "questionAnswers\n*" QuestionAnswer               
+ExamHeader                   "1" *-[#595959,plain]-> "feedbackType\n1" FeedbackType                 
+ExamHeader                   "1" *-[#595959,plain]-> "gradeType\n1" GradeType                    
+MatchingQuestion              -[#595959,dashed]->  MatchingQuestionAnswer       : "«create»"
+MatchingQuestion              -[#000082,plain]-^  Question                     
+MatchingQuestionAnswer        -[#000082,plain]-^  QuestionAnswer               
+MissingWordQuestion           -[#595959,dashed]->  MissingWordQuestionAnswer    : "«create»"
+MissingWordQuestion           -[#000082,plain]-^  Question                     
+MissingWordQuestionAnswer     -[#000082,plain]-^  QuestionAnswer               
+MultipleChoiceQuestion        -[#595959,dashed]->  MultipleChoiceQuestionAnswer : "«create»"
+MultipleChoiceQuestion        -[#000082,plain]-^  Question                     
+MultipleChoiceQuestionAnswer  -[#000082,plain]-^  QuestionAnswer               
+NumericalQuestion             -[#595959,dashed]->  NumericalQuestionAnswer      : "«create»"
+NumericalQuestion             -[#000082,plain]-^  Question                     
+NumericalQuestionAnswer       -[#000082,plain]-^  QuestionAnswer               
+Question                     "1" *-[#595959,plain]-> "theme\n1" QuestionTheme                
+Question                      -[#595959,dashed]->  QuestionTheme                : "«create»"
+QuestionAnswer                -[#595959,dashed]->  Question                     
+QuestionAnswer               "1" *-[#595959,plain]-> "question\n1" Question                     
+QuestionAnswer               "1" *-[#595959,plain]-> "questionFeedback\n1" QuestionFeedback             
+Section                      "1" *-[#595959,plain]-> "questions\n*" Question                     
+ShortAnswerQuestion           -[#000082,plain]-^  Question                     
+ShortAnswerQuestion           -[#595959,dashed]->  ShortAnswerQuestionAnswer    : "«create»"
+ShortAnswerQuestionAnswer     -[#000082,plain]-^  QuestionAnswer               
+SingleChoiceQuestion          -[#000082,plain]-^  Question                     
+SingleChoiceQuestion          -[#595959,dashed]->  SingleChoiceQuestionAnswer   : "«create»"
+SingleChoiceQuestionAnswer    -[#000082,plain]-^  QuestionAnswer               
+SummativeExam                 -[#000082,plain]-^  Exam                         
+TakeExamController           "1" *-[#595959,plain]-> "courseEnrollments\n1" CourseEnrollmentRepository   
+TakeExamController            -[#595959,dashed]->  ExamExecutionBuilder         : "«create»"
+TakeExamController           "1" *-[#595959,plain]-> "builder\n1" ExamExecutionBuilder         
+TakeExamController           "1" *-[#595959,plain]-> "examExecutions\n1" ExamExecutionRepository      
+TakeExamController           "1" *-[#595959,plain]-> "exams\n1" ExamRepository               
+TrueOrFalseQuestion           -[#000082,plain]-^  Question                     
+TrueOrFalseQuestion           -[#595959,dashed]->  TrueOrFalseQuestionAnswer    : "«create»"
+TrueOrFalseQuestionAnswer     -[#000082,plain]-^  QuestionAnswer               
+@enduml

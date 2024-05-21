@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "User" as MG
+
+activate MG
+MG -> ":System" : selects option "Share Board"
+activate ":System"
+":System"--> MG : displays the list of owned boards and ask for the board to share, the permission to grant and the user to share with
+deactivate ":System"
+MG -> ":System": types the information
+activate ":System"
+":System"--> MG : confirms the operation success
+deactivate ":System"
+
+@enduml

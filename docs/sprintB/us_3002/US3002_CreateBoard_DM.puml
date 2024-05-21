@@ -1,0 +1,101 @@
+@startuml
+title "Domain Model Extract of Board Creation "
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+
+package Board{
+  class Board <<root>> {
+    - maxColumns
+    - maxRows
+  }
+
+  class Title <<value object>> {}
+
+  class Column <<entity>>{
+    - title
+    - id
+  }
+
+  class Row <<entity>>{
+    - title
+    - id
+  }
+
+  class State <<enum>> {}
+
+  note bottom of State {
+    active
+    archived
+  }
+}
+package BoardShare {
+  class BoardShare <<root>>{}
+
+  class UserPermission <<enum>>{}
+
+    note bottom of UserPermission {
+        read
+        write
+    }
+
+}
+
+package SystemUser{
+  class SystemUser <<root>>{
+  }
+
+  class email << value object>>{}
+  class password << value object>>{}
+  class firstname << value object>>{}
+  class lastname << value object>>{}
+  class username << value object>>{}
+
+  class Role <<value object>>{}
+
+}
+
+package eCourseUser{
+  class eCourseUser <<root>>{
+  }
+
+  class ShortName <<value object>>{}
+  class FullName <<value object>>{}
+  class BirthDate <<value object>>{}
+  class Email <<value object>>{}
+  class TaxPayerNumber <<value object>>{}
+}
+Board.Board --> Board.Title : has
+SystemUser.SystemUser --> email: has
+SystemUser.SystemUser --> firstname: has
+SystemUser.SystemUser --> lastname: has
+SystemUser.SystemUser --> username: has
+SystemUser.SystemUser --> password: has
+SystemUser.SystemUser --> Role: has
+Board.Board --> "*" Board.Column : has
+Board.Board --> "*" Board.Row : has
+Board.Board --> eCourseUser.eCourseUser : owned by
+Board.Board --> Board.State : has
+Board.Board ..> BoardShare.BoardShare : notifies user
+Board.Board ..> eCourseUser.eCourseUser : created by
+eCourseUser.eCourseUser ..> BoardShare.BoardShare : create
+BoardShare.BoardShare --> eCourseUser.eCourseUser : has
+BoardShare.BoardShare --> BoardShare.UserPermission : has
+eCourseUser.eCourseUser ..> SystemUser.SystemUser : has a
+eCourseUser.eCourseUser --> ShortName : has
+eCourseUser.eCourseUser --> FullName : has
+eCourseUser.eCourseUser --> BirthDate : has
+eCourseUser.eCourseUser --> Email : has
+eCourseUser.eCourseUser --> TaxPayerNumber : has
+eCourseUser.eCourseUser ..> BoardShare.BoardShare : create
+@enduml

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1"
+	xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+	<persistence-unit name="eapli.eCoursePU">
+		<!-- <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider> -->
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+		<class>eapli.framework.infrastructure.pubsub.impl.simplepersistent.model.EventRecord</class>
+		<class>eapli.framework.infrastructure.pubsub.impl.simplepersistent.model.EventConsumption</class>
+		<class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
+		<class>eapli.framework.infrastructure.authz.domain.model.Role</class>
+		<class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
+		<class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+
+		<!-- #TODO: Add domain classes  -->
+		<class>eapli.ecourse.coursemanagement.domain.Course</class>
+		<class>eapli.ecourse.classmanagment.domain.Class</class>
+		<class>eapli.ecourse.courseenrollement.domain.CourseEnrollment</class>
+		<class>eapli.ecourse.courseenrollement.domain.EnrollmentApplication</class>
+		<class>eapli.ecourse.teacher.domain.Teacher</class>
+		<class>eapli.ecourse.student.domain.Student</class>
+		<class>eapli.ecourse.student.domain.MechanographicNumber</class>
+		<class>eapli.ecourse.boardManagement.domain.Board</class>
+		<class>eapli.ecourse.boardManagement.domain.Column</class>
+		<class>eapli.ecourse.boardManagement.domain.Row</class>
+		<class>eapli.ecourse.boardManagement.domain.State</class>
+		<class>eapli.ecourse.postit.domain.PostIt</class>
+		<class>eapli.ecourse.sharedBoardManagement.domain.UserPermission</class>
+		<class>eapli.ecourse.sharedBoardManagement.domain.SharedBoard</class>
+		<class>eapli.ecourse.question.domain.Question</class>
+		<class>eapli.ecourse.exammanagment.domain.Exam</class>
+		<class>eapli.ecourse.exammanagment.domain.SummativeExam</class>
+		<class>eapli.ecourse.exammanagment.domain.FormativeExam</class>
+		<class>eapli.ecourse.exammanagment.domain.Section</class>
+		<class>eapli.ecourse.question.domain.TrueOrFalseQuestion</class>
+		<class>eapli.ecourse.question.domain.NumericalQuestion</class>
+		<class>eapli.ecourse.question.domain.MissingWordQuestion</class>
+		<class>eapli.ecourse.question.domain.MatchingQuestion</class>
+		<class>eapli.ecourse.question.domain.SingleChoiceQuestion</class>
+		<class>eapli.ecourse.question.domain.ShortAnswerQuestion</class>
+		<class>eapli.ecourse.question.domain.MultipleChoiceQuestion</class>
+		<class>eapli.ecourse.boardUpdate.domain.Update</class>
+		<class>eapli.ecourse.boardUpdate.domain.BoardUpdate</class>
+		<class>eapli.ecourse.boardUpdate.domain.CellUpdate</class>
+		<class>eapli.ecourse.examExecution.domain.ExamExecution</class>
+		<class>eapli.ecourse.questionanswer.domain.MissingWordQuestionAnswer</class>
+		<class>eapli.ecourse.questionanswer.domain.MatchingQuestionAnswer</class>
+		<class>eapli.ecourse.questionanswer.domain.MultipleChoiceQuestionAnswer</class>
+		<class>eapli.ecourse.questionanswer.domain.NumericalQuestionAnswer</class>
+		<class>eapli.ecourse.questionanswer.domain.ShortAnswerQuestionAnswer</class>
+		<class>eapli.ecourse.questionanswer.domain.SingleChoiceQuestionAnswer</class>
+		<class>eapli.ecourse.questionanswer.domain.TrueOrFalseQuestionAnswer</class>
+
+		<properties>
+			<!-- <property name="javax.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/ecourse" /> -->
+			<!-- <property name="javax.persistence.jdbc.url" value="jdbc:h2:./db/ecourse;AUTO_SERVER=true;" /> -->
+			<property name="javax.persistence.jdbc.url" value="jdbc:h2:tcp://149.90.48.183:9092/~/ecourse;AUTO_SERVER=true;" />
+			<!--
+			<property name="javax.persistence.jdbc.url" value="jdbc:h2:~/ecourse;MV_STORE=FALSE;AUTO_SERVER=true;" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:h2:~/ecourse;MV_STORE=FALSE;" />
+			-->
+
+			<property name="javax.persistence.jdbc.user" value="sa" />
+			<!-- <property name="javax.persistence.jdbc.password" value="" /> -->
+			<property name="javax.persistence.jdbc.password" value="sapos_sem4pi" />
+			<property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
+
+
+			 <!-- <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/> -->
+			
+			<!-- <property name="eclipselink.logging.level" value="FINE"/> -->
+			<!-- <property name = "hibernate.show_sql" value = "true" /> -->
+			<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" />
+			
+			<!-- Hibernate C3PO Connection Pooling -->
+			<property name="hibernate.connection.provider_class" value="org.hibernate.c3p0.internal.C3P0ConnectionProvider"/>
+			<property name="hibernate.c3p0.min_size" value="5" />
+			<property name="hibernate.c3p0.max_size" value="20" />
+            <property name="hibernate.c3p0.timeout" value="300" />
+            <property name="hibernate.c3p0.max_statements" value="0" />
+            <property name="hibernate.c3p0.idle_test_period" value="120" />
+			<property name="hibernate.hbm2ddl.auto" value="update"/>
+		</properties>
+	</persistence-unit>
+</persistence>

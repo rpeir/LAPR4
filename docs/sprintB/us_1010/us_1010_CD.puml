@@ -1,0 +1,121 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Teacher Recurring Class Schedule - Class Diagram
+top to bottom direction
+skinparam linetype ortho
+
+package Teacher {
+    class Teacher <<root>> {
+        + courses() : Iterable<Course>
+    }
+}
+
+package Course {
+    class Course <<root>> {
+        + endingDate() : Date
+    }
+}
+
+package CourseEnrollment {
+    class CourseEnrollment <<root>> {
+        + enrolledStudent() : List<Student>
+    }
+}
+
+package repositories {
+    interface TeacherRepository <<repository>> {
+        + findById() : Optional<Teacher>
+    }
+
+    interface CourseEnrollmentRepository <<repository>> {
+        + findByCourse() : Optional<CourseEnrollment>
+    }
+
+    interface ClassRepository <<repository>> {
+        + saveAll(Class class) : Iterable<Class>
+        + findByCourse(Course course) : Iterable<Class>
+        + findByCourseAndTimePeriod(Course course, TimestampInterval timePeriod) : Iterable<Class>
+        + findByTeacherAndTimePeriod(Teacher teacher, TimestampInterval timePeriod) : Iterable<Class>
+        + findByTimePeriod(TimestampInterval timePeriod) : Iterable<Class>
+    }
+}
+
+package Class {
+/'
+    class ClassFactory <<factory>>  {
+        + build() : Class
+        + buildRecurringClass(String title, Course course, TimestampInterval timePeriod, Teacher teacher) : void
+    }
+'/
+    class Class <<root>> {
+        - title : String
+        - course : Course
+        - timePeriod : TimestampInterval
+        - teacher : Teacher
+        + Class(String title, Course course, TimestampInterval, Teacher teacher)
+    }
+
+    enum ClassType {
+        + RECURRING_CLASS
+        + EXTRA_CLASS
+    }
+}
+
+class ScheduleService <<service>> {
+    + checkCourseStudentDisponibility(course, date, timePeriod, courseEnrollment) : boolean
+    + scheduleClass(title, course, date, timePeriod, courseEnrollment, teacher) : Iterable<Class>
+}
+
+package infraestructure.persistence {
+    class PersistenceContext <<persistence>> {
+    + repositories : RepositoryFactory
+    }
+
+    interface RepositoryFactory <<factory>> {
+        + teachers() : TeacherRepository
+        + courseEnrollments() : CourseEnrollmentRepository
+        + classes() : ClassRepository
+    }
+}
+
+class ClassScheduleUI <<presentation>> {
+
+}
+
+class ClassScheduleController <<application>> {
+    + listCourses() : Iterable<Course>
+    + courseSchedule(Course course) : Iterable<Class>
+    + checkStudentDisponibility(Course course, DayOfWeek date, TimeInterval timePeriod) : boolean
+    + scheduleClass(String title, Course course, DayOfWeek date, TimeInterval timePeriod) : Iterable<Class>
+}
+
+ClassScheduleUI ..> ClassScheduleController
+ClassScheduleUI ..> Course.Course
+ClassScheduleUI ..> Class.Class
+ClassScheduleController ..> PersistenceContext
+ClassScheduleController ..> RepositoryFactory
+ClassScheduleController ..> TeacherRepository
+ClassScheduleController ..> CourseEnrollmentRepository
+ClassScheduleController ..> ClassRepository
+ClassScheduleController ..> ScheduleService
+ScheduleService ..> CourseEnrollment.CourseEnrollment
+ScheduleService ..> Class
+'ScheduleService ..> ClassFactory
+ScheduleService ..> ClassRepository
+ScheduleService ..> Course.Course
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> TeacherRepository
+RepositoryFactory --> CourseEnrollmentRepository
+RepositoryFactory --> ClassRepository
+TeacherRepository --> Teacher.Teacher
+CourseEnrollmentRepository --> CourseEnrollment.CourseEnrollment
+ClassRepository --> Class.Class
+'ClassFactory ..> Class.Class
+'ClassFactory ..> Course.Course
+'ClassFactory ..> Teacher.Teacher
+'Class.ClassFactory ..> Class.ClassType
+CourseEnrollment.CourseEnrollment --> Course.Course
+Class.Class --> Course.Course
+Class.Class --> Class.ClassType
+
+@enduml

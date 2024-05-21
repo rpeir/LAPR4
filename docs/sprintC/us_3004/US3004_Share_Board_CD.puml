@@ -1,0 +1,101 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Share a Board
+
+
+top to bottom direction
+skinparam linetype ortho
+
+package Board {
+    class Board << root >>{
+      - id: long
+      - title: String
+      - state : State
+      - postIts: Map<Pair<Integer, Integer>, PostIt>
+      + board_title(): String
+      + history(): List<Update>
+      + addPostIt(PostIt, int, int): void
+      + removePostIt(int, int): PostIt
+      + postIts(): Map<Pair<Integer, Integer>, PostIt>
+      + identity(): Long
+      + id(): Long
+      + isActive(): boolean
+      + getPostIt(int, int): PostIt
+      + isFree(int, int): boolean
+    }
+    interface BoardRepository << persistence >> {
+      + findActiveByOwner(String): Optional<Board>
+    }
+}
+
+package BoardShared {
+class ShareBoardController{
+    + listActiveBoards(EmailAddress): Iterable<Board>
+    + getPermissions(): List<UserPermission>
+    + shareBoard(String, String, String): SharedBoard
+
+}
+    interface BoardSharedRepository << persistence >> {
+      + save(BoardShared): BoardShared
+    }
+    class SharedBoard {
+        + board(): Board
+        + user(): EmailAddress
+    }
+}
+
+package TCP.common {
+    class MessageCodesTCP {
+      + : int SHARE_BOARD
+      + : int LISTBOARDS
+      + : int BOARD_PERMISSIONS
+    }
+
+    class MessageFormatTCP {
+      + sendMessage(int, int, byte[]): void
+      + sendMessage(int, int, byte[], Long): void
+      + sendMessage(int, int, String): void
+      + sendMessage(int, int, String, Long): void
+      + readMessage(): MessageTCP
+    }
+
+    class MessageTCP {
+      + sessionID(): long
+      + data(): byte[]
+      + code(): int
+    }
+}
+package TCP.server {
+    class ShareBoardTCPServerController << TCP Server Controller >> {
+      + listActiveBoards(MessageTCP): String
+      + getPermissions(MessageTCP): String
+      + shareBoard(MessageTCP): void
+    }
+}
+
+package TCP.client {
+    class ShareBoardTCPClientController << TCP Client Controller >> {
+      + listActiveBoards(): List<String>
+      + getPermissions(): List<String>
+      + shareBoard(String, String, String): void
+    }
+
+    class ShareBoardUI << presentation >> {
+    }
+}
+
+ShareBoardController ..> BoardRepository
+ShareBoardController ..> BoardSharedRepository
+ShareBoardUI --> ShareBoardTCPClientController
+TCP.client ..> TCP.common
+TCP.server ..> TCP.common
+MessageFormatTCP ..> MessageTCP
+MessageFormatTCP ..> MessageCodesTCP
+BoardRepository --> Board.Board
+BoardSharedRepository ..> BoardShared.SharedBoard
+BoardShared.SharedBoard --> Board.Board
+ShareBoardTCPServerController ..> ShareBoardController
+
+
+@enduml
+

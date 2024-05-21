@@ -1,0 +1,23 @@
+@startuml
+autonumber
+actor "User" as US
+Title : Change PostIt - Move PostIt
+
+activate US
+US -> ":System" : selects option "Change PostIt"
+activate ":System"
+":System" --> US : shows the list of Boards that the User can change
+deactivate ":System"
+US -> ":System" : selects the Board to change
+activate ":System"
+":System" --> US : shows list of change options (Move, Edit, Delete)
+deactivate ":System"
+US -> ":System" : selects option "Move"
+":System" --> US : asks for initial position and final position (row1, column1, row2, column2)
+US -> ":System" : inputs initial position and final position
+activate ":System"
+":System" --> US : shows the confirmation message
+deactivate ":System"
+deactivate US
+
+@enduml

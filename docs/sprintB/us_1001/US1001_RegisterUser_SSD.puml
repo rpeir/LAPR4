@@ -1,0 +1,24 @@
+@startuml
+autonumber
+actor "Manager" as MG
+
+activate MG
+MG -> ":System" : selects option "Register System User"
+activate ":System"
+":System"--> MG : asks for the necessary information (FirstName, LastName, UserName, Email)
+deactivate ":System"
+MG -> ":System": types the information
+activate ":System"
+":System"--> MG : show list of roles
+deactivate ":System"
+MG -> ":System": selects the role
+activate ":System"
+":System"--> MG : ask for additional information related to the role
+deactivate ":System"
+MG -> ":System": types the information
+activate ":System"
+":System"--> MG : confirms the operation success
+deactivate ":System"
+deactivate MG
+
+@enduml

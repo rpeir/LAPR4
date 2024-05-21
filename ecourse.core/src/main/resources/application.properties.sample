@@ -1,0 +1,14 @@
+#####################################################
+##
+## eCourse
+##
+#####################################################
+
+persistence.persistenceUnit=eapli.eCoursePU
+
+#persistence.repositoryFactory=eapli.ecourse.persistence.jpa.JpaRepositoryFactory
+persistence.repositoryFactory=eapli.ecourse.persistence.inmemory.InMemoryRepositoryFactory
+
+ui.menu.layout=horizontal
+
+UseEventfulControllers=true

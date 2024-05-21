@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Enable/disable system user
+top to bottom direction
+skinparam linetype ortho
+
+
+
+package repositories {
+    interface UserRepository{
+        + allUsers() : Iterable<SystemUser>
+
+    }
+}
+package services {
+    class UserManagementService {
+        + allUsers() : Iterable<SystemUser>
+    }
+}
+
+package infraestructure.persistence {
+    class PersistenceContext {
+    + repositories : RepositoryFactory
+    }
+
+    interface RepositoryFactory {
+        + systemUsers() : UserRepository
+    }
+}
+
+class ListSystemUserUI <<presentation>>
+
+class ListSystemUserController <<application>> {
+    + listSystemUser() : Iterable<SystemUser>
+}
+
+ListSystemUserUI ..> ListSystemUserController
+ListSystemUserController ..> UserManagementService
+ListSystemUserController ..> PersistenceContext
+ListSystemUserController ..> RepositoryFactory
+ListSystemUserController ..> UserRepository
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> UserRepository
+UserRepository --> SystemUser.SystemUser
+
+
+@enduml

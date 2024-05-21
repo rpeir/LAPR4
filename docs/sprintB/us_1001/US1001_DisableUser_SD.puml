@@ -1,0 +1,74 @@
+@startuml
+'http://plantuml.com/skinparam.html
+'skinparam handwritten true
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor Admin as Actor
+participant EnableSystemUserUI as UI <<presentation>>
+participant EnableSystemUserController as Controller <<application>>
+participant UserManagementService as Service <<service>>
+participant PersistenceContext as Persistence <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+database UserRepository as Repository <<repository>>
+
+
+Actor -> UI: disable system user
+activate UI
+UI -> Controller: create
+UI -> Controller: listSystemUser()
+activate Controller
+Controller -> Service: create()
+Controller --> Service:  activeUsers()
+activate Service
+
+Service -> Persistence: repositories()
+activate Persistence
+
+Persistence -> Factory:create()
+Persistence -> Factory:systemUsers()
+deactivate Persistence
+activate Factory
+Factory->Repository:create()
+deactivate Factory
+
+Service -> Repository: activeUsers()
+activate Repository
+Repository--> Service:users
+deactivate Repository
+
+Service --> Controller: users
+deactivate Service
+
+Controller --> UI: users
+deactivate Controller
+UI--> Actor: show list of system users and ask to select one
+Actor -> UI: select system user
+
+UI -> Controller: disableSystemUser(systemUser)
+activate Controller
+Controller -> Service: disableSystemUser(systemUser)
+activate Service
+Service -> Persistence: repositories()
+activate Persistence
+Persistence -> Factory:create()
+Persistence -> Factory:systemUsers()
+deactivate Persistence
+activate Factory
+Factory->Repository:create()
+deactivate Factory
+Service -> Repository: disable(systemUser)
+activate Repository
+Repository--> Service:systemUser
+deactivate Repository
+Service --> Controller: systemUser
+deactivate Service
+Controller --> UI: systemUser
+deactivate Controller
+UI --> Actor: show operation success message
+
+
+deactivate UI
+@enduml

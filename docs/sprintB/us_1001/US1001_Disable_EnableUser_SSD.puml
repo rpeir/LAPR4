@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor "Manager" as MG
+
+activate MG
+MG -> ":System" : selects option "Disable/Enable User"
+activate ":System"
+":System"--> MG : shows available users
+deactivate ":System"
+MG -> ":System": selects user
+activate ":System"
+":System"--> MG : shows possible actions (disable/enable)
+deactivate ":System"
+MG -> ":System": selects action
+activate ":System"
+":System"--> MG : informs operation success
+deactivate ":System"
+deactivate MG
+
+@enduml

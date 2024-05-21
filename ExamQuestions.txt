@@ -1,0 +1,89 @@
+QUESTION
+Theme: COURSE1
+How is the quality of our services compared to other companies?
+Type: Single-Choice
+a)Much better
+b)A bit better
+c)Equal
+d)A bit worse
+e)Much worse
+
+Solution: a
+Question value: 2
+Answer the question by selecting one, and only one, of the options provided.
+
+QUESTION
+Theme: COURSE1
+What items would you like us to have more on offer?
+Type: Multiple-Choice
+a)Clothing
+b)Cosmetic
+c)Home appliances
+d)House and Garden and decoration
+e)Books and Stationery
+
+Solution: a,c
+Question value: 3
+Answer the question by selecting one or more of the options provided.
+
+QUESTION
+Theme: COURSE1
+How many purchases have you made with us?
+Type: Numeric
+Solution: 10
+Accepted: 3
+Question value: 3
+Answer the question by entering a numeric value.
+
+QUESTION
+Theme: COURSE1
+Are you alive?
+Type: True or False
+True
+False
+Solution: True
+Question value: 1
+Answer the question by entering true or false.
+
+QUESTION
+Theme: COURSE1
+Pair the animals with their type?
+Type: Matching
+a-Bird,b-Fish,c-Clam
+1-Salmon,2-Octopus,3-Swallow
+Solution: a-2,b-1,c-3
+Question value: 4
+Answer the question by matching the correct answers with each question.
+
+QUESTION
+Theme: COURSE1
+Write something.
+Type: Short Answer
+
+Solution:
+100-oxygen*fuel
+50-*fuel*
+50-*oxygen*
+40-*air*
+0-*
+Question value: 2
+Answer the question by typing a word or a phrase.
+
+QUESTION
+Theme: COURSE1
+What is your name?
+Type: Select Missing Words
+Hello my name is [[1]]
+Hello my name is [[2]]
+And cats name is [[3]]
+Options:
+[[1]] Salmon,Octopus,Swallow
+[[2]] Salmon,Octopus,Swallow
+[[3]] Salmon,Octopus,Swallow
+
+Solution:
+[[1]] Salmon
+[[2]] Octopus
+[[3]] Swallow
+Question value: 5
+Select a word from the dropdown menu to complete a phrase.

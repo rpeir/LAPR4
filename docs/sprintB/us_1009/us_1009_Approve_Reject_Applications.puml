@@ -1,0 +1,81 @@
+@startuml
+autonumber
+title SD - Approve or Reject Student Applications to Courses
+
+actor Manager as MG
+participant ApprovalUI as UI <<presentation>>
+participant ApprovalController as CTRL <<application>>
+database EnrollmentRepository as repoEnrollment <<database>>
+participant Enrollment as enrollment <<domain>>
+database CourseRepository as repoCourse <<database>>
+participant Course as course <<domain>>
+database StudentRepository as repoStudent <<database>>
+participant Student as student <<domain>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+
+activate MG
+MG -> UI: selects option "Approve/Reject Enlistment to a Course"
+activate UI
+UI -> CTRL: create()
+activate CTRL
+CTRL -> Context: repositories()
+activate Context
+Context --> CTRL: RepositoryFactory
+deactivate Context
+CTRL -> Factory: enrollments()
+activate Factory
+Factory --> CTRL: EnrollmentRepository
+deactivate Factory
+CTRL -> Factory: courses()
+activate Factory
+Factory --> CTRL: CourseRepository
+deactivate Factory
+CTRL -> Factory: students()
+activate Factory
+Factory --> CTRL: StudentRepository
+deactivate Factory
+CTRL -> repoEnrollment: listPendingApprovals()
+activate repoEnrollment
+repoEnrollment --> CTRL: list of pending approvals
+deactivate repoEnrollment
+CTRL --> UI: list of pending approvals
+deactivate CTRL
+UI --> MG: shows pending requests
+
+MG -> UI: selects request
+UI -> CTRL: findRequest(requestId)
+activate CTRL
+CTRL -> repoEnrollment: findRequest(requestId)
+activate repoEnrollment
+repoEnrollment --> CTRL: enrollment
+deactivate repoEnrollment
+CTRL -> repoCourse: findCourse(courseId)
+activate repoCourse
+repoCourse --> CTRL: course
+deactivate repoCourse
+CTRL -> repoStudent: findStudent(studentId)
+activate repoStudent
+repoStudent --> CTRL: student
+deactivate repoStudent
+CTRL --> UI: enrollment, course, student
+deactivate CTRL
+UI --> MG: shows possible options (accept or reject) and request details
+MG -> UI: selects option
+UI -> CTRL: processApproval(enrollment, option)
+activate CTRL
+CTRL -> enrollment: setStatus(option)
+activate enrollment
+enrollment --> CTRL: updated enrollment
+deactivate enrollment
+CTRL -> repoEnrollment: saveEnrollment(enrollment)
+activate repoEnrollment
+repoEnrollment --> CTRL
+deactivate repoEnrollment
+
+CTRL --> UI: informs operations success
+deactivate CTRL
+UI --> MG: informs operations success
+deactivate UI
+deactivate MG
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+title Class Diagram - Close Course
+
+package presentation {
+  class CloseCourseUI {
+    +doShow()
+  }
+}
+
+package application {
+  class CloseCourseController {
+    -courseRepository: CourseRepository
+
+    +create(): void
+    +close(Course course): void
+  }
+
+  class ListCourseService{
+    -courseRepository: CourseRepository
+
+    +openedCourses
+  }
+}
+
+package domain {
+  class Course {
+    +close():void
+  }
+
+}
+
+package persistence {
+  class PersistenceContext {
+    +repositories(): RepositoryFactory
+  }
+}
+
+package factory {
+  class RepositoryFactory {
+    +createCourseRepository(): CourseRepository
+
+  }
+}
+
+package repositories {
+
+  interface CourseRepository {
+    +listAvailableCourses(): List<Course>
+    +findCourse(courseId: String): Course
+  }
+}
+
+CloseCourseUI --> CloseCourseController
+CloseCourseController --> CourseRepository
+CloseCourseController --> Course
+
+CloseCourseController --> ListCourseService
+ListCourseService --> CourseRepository
+
+CourseRepository --> PersistenceContext
+
+PersistenceContext --> RepositoryFactory
+
+@enduml
+
+
+
+

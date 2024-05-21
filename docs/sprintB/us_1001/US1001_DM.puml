@@ -1,0 +1,61 @@
+@startuml
+title "Domain Model Extract of System User Registration, management and listing "
+left to right direction
+top to bottom direction
+skinparam padding 10
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+package SystemUser{
+  class SystemUser <<root>>{
+  }
+
+  class email << value object>>{}
+  class password << value object>>{}
+  class firstname << value object>>{}
+  class lastname << value object>>{}
+  class username << value object>>{}
+
+  class Role <<value object>>{}
+
+}
+package Manager {
+  class Manager <<root>> {}
+}
+package Teacher{
+  class Teacher <<root>> {
+  }
+
+  class Acronym <<value object>>{}
+}
+package Student{
+  class Student <<entity>>{
+  }
+
+  class MechanographicNumber <<value object>>{}
+}
+package eCourseUser{
+  class eCourseUser <<root>>{
+  }
+
+  class ShortName <<value object>>{}
+  class FullName <<value object>>{}
+  class BirthDate <<value object>>{}
+  class Email <<value object>>{}
+  class TaxPayerNumber <<value object>>{}
+}
+Manager.Manager ..> SystemUser.SystemUser : creates
+Manager.Manager ..> eCourseUser.eCourseUser : creates
+Manager.Manager ..> SystemUser.SystemUser : enable/disable
+Manager.Manager ..> SystemUser.SystemUser : view all
+Manager.Manager ..> eCourseUser.eCourseUser : view all
+eCourseUser.eCourseUser ..> Teacher.Teacher : is a
+eCourseUser.eCourseUser ..> Student.Student : is a
+@enduml

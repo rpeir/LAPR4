@@ -1,0 +1,59 @@
+@startuml
+title Class Diagram - Register Course
+
+package presentation {
+  class RegisterCoursetUI {
+    +doShow()
+  }
+}
+
+package application {
+  class RegisterCourseController {
+    -courseRepository: CourseRepository
+
+    +create(): void
+    +registerCourse(title, minStudents, maxStudents, description): void
+  }
+}
+
+package domain {
+  class Course {
+    +getId(): String
+  }
+
+}
+
+package persistence {
+  class PersistenceContext {
+    +repositories(): RepositoryFactory
+  }
+}
+
+package factory {
+  class RepositoryFactory {
+    +createCourseRepository(): CourseRepository
+
+  }
+}
+
+package repositories {
+
+  interface CourseRepository {
+    +listAvailableCourses(): List<Course>
+    +findCourse(courseId: String): Course
+  }
+}
+
+RegisterCoursetUI --> RegisterCourseController
+RegisterCourseController --> CourseRepository
+RegisterCourseController --> Course
+
+CourseRepository --> PersistenceContext
+
+PersistenceContext --> RepositoryFactory
+
+@enduml
+
+
+
+

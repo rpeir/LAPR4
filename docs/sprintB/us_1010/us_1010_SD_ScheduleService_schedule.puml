@@ -1,0 +1,80 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title ScheduleService - scheduleClass()
+autonumber
+
+participant ScheduleService as Service <<service>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as RF <<factory>>
+participant CouseEnrollment <<domain>>
+participant Course <<domain>>
+database ClassRepository as Classes <<repository>>
+'participant ClassFactory as Factory <<factory>>
+participant Class <<domain>>
+
+-> Service: scheduleClass(title, course,\ndate, timePeriod, \ncourseEnrollment, teacher)
+activate Service
+
+Service -> Context : repositories()
+activate Context
+Context -> Service : RepositoryFactory
+deactivate Context
+Service -> RF : classes()
+activate RF
+RF -> Service : ClassRepository
+deactivate RF
+
+Service -> CouseEnrollment: enrolledStudents()
+activate CouseEnrollment
+CouseEnrollment --> Service: List<Student>
+deactivate CouseEnrollment
+
+Service -> Course : endingDate()
+activate Course
+Course --> Service : endingDate
+deactivate Course
+
+loop while classDate <= endingDate
+
+Service -> Classes: findClassByCourseAndTimePeriod(course, timePeriod)
+activate Classes
+Classes --> Service :  Iterable<Class>
+note right of Service: if class is not found, continue, else throw exception
+deactivate Classes
+Service -> Classes : findClassByTeacherAndTimePeriod(teacher, timePeriod)
+activate Classes
+Classes --> Service : Iterable<Class>
+note right of Service: if class is not found, continue, else throw exception
+deactivate Classes
+
+end loop
+
+/'
+Service -> Factory : create
+
+loop while classDate <= endingDate
+
+Service -> Factory : buildRecurringClass(title, course, date, timePeriod, enrolledStudents, teacher)
+activate Factory
+deactivate Factory
+Service -> Factory : build()
+activate Factory
+Factory -> Class : create(title, course, date, timePeriod, enrolledStudents, teacher)
+Factory --> Service : class
+deactivate Factory
+
+end loop
+'/
+
+loop while classDate <= endingDate
+
+Service -> Class : create(title, course, timePeriod, enrolledStudents, teacher, ClassType.RECURRING_CLASS)
+
+end loop
+
+<-- Service : Iterable<Class>
+deactivate Service
+
+
+@enduml

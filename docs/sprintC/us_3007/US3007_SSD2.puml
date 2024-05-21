@@ -1,0 +1,33 @@
+@startuml
+autonumber
+actor "User" as US
+Title : Change PostIt - Edit PostIt
+
+activate US
+US -> ":System" : selects option "Change PostIt"
+activate ":System"
+":System" --> US : shows the list of Boards that the User can change
+deactivate ":System"
+US -> ":System" : selects the Board to change
+activate ":System"
+":System" --> US : shows list of change options (Move, Edit, Delete)
+deactivate ":System"
+US -> ":System" : selects option "Edit"
+activate ":System"
+":System" --> US : asks for the postIt position (row, column)
+deactivate ":System"
+US -> ":System" : inputs position
+activate ":System"
+":System" --> US : asks for the new content type (Text, Image)
+deactivate ":System"
+US -> ":System" : inputs content type
+activate ":System"
+":System" --> US : asks for the new content (text or image path)
+deactivate ":System"
+US -> ":System" : inputs content
+activate ":System"
+":System" --> US : shows the confirmation message
+deactivate ":System"
+deactivate US
+
+@enduml

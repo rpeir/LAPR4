@@ -1,0 +1,206 @@
+@startuml
+
+title SD - Create Post It
+skinparam handwritten true
+skinparam monochrome true
+left to right direction
+top to bottom direction
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam groupInheritance 1
+skinparam linetype ortho
+skinparam separation 1000
+skinparam NoteBackgroundColor #A9A9A9
+skinparam package {
+    BackgroundColor #D3D3D3
+    FontStyle bold
+}
+package core.domain{
+class EcourseUser {
+  -version: Long
+  -emailAddress: EmailAddress
+  -taxPayerNumber: TPN
+  -fullName: String
+  -shortName: String
+  -birthdate: Date
+}
+
+class BoardShared {
+  -id: Long
+  -userPermission: UserPermission
+  -board: Board
+  -email: EmailAddress
+}
+
+class Board {
+  -id: Long
+  -title: String
+  -columns: Set<Column>
+  -rows: Set<Row>
+  -state: State
+  -owner: ECourseUser
+  -postIts: Map<Pair<Integer, Integer>, PostIt>
+  -history: List<Update>
+  +addPostIt(postIt: PostIt, row: int, column: int, ): void
+  +removePostIt(row: int, column: int): void
+  +getPostIt(row: int, column: int): PostIt
+  +postIts(): Map<Pair<Integer, Integer>, PostIt>
+}
+
+class PostIt{
+    -postItId: Long
+    -owner: ECourseUser
+    -content: Content
+    +changePostIt(content: Content): void
+}
+
+class Content{
+    -contentId: Long
+    -type: ContentType
+    -content: byte[]
+}
+}
+
+package Repositories{
+
+interface BoardSharedRepository{}
+
+interface BoardRepository{
+    +save(board: Board): void
+    +findByTitle(boardId: String): Optional<Board>
+}
+}
+
+class EventPublisher {
+  +publish(event: Event): void
+}
+
+class BoardUpdateEvent {
+}
+
+package core.postit.application{
+class CreatePostItController {
+    -boardRepository: BoardRepository
+    -boardSharedRepository: BoardSharedRepository
+    -findLoggedUser: FindLoggedUser
+    -eventPublisher: EventPublisher
+    +listUserBoardsShared(EmailAddress email): Iterable<String>
+    +createPostIt(boardTitle: String, row: int, column: int, type: String, content: byte[]): PostIt
+}
+}
+package client.postit{
+class CreatePostItUI {
+  +doShow(): boolean
+  +headline: String
+}
+class CreatePostItTCPController{
+    +listUserBoardsShared(): List<String>
+    +createPostIt(String input, String contentType, String content:String): PostIt
+}
+}
+
+package server{
+class TcpSharedBoardServerThread{
+    -socket: Socket
+    -dispatcher: EventDispatcher
+    -VERSION: int
+    +run(): void
+    +setupEventHandlers(): void
+
+}
+package server.controller{
+class CreatePostItServerTCPController{
+    +listUserBoardsShared(message: MessageTCP): String
+    +createPostIt(String contentType, byte[] content, String boardTitle, String row, String column,long sessionId): PostIt
+}
+
+}
+}
+
+
+package persistence{
+class PersistenceContext {
+  +repositories(): RepositoryFactory
+}
+}
+package Factory{
+class RepositoryFactory {
+  +boards(): BoardRepository
+  +boardShared(): BoardSharedRepository
+}
+}
+
+package common.infrastructure{
+class MessageFormatTCP{
+    -sock: Socket
+    -sIn: DataInputStream
+    -sOut: DataOutputStream
+    -Byte: int
+    -MAX_SIZE: int
+    +sendMessage(version: int, code: int, text: String, sessionID: Long): void
+    +sendMessage(version: int, code: int, data: byte[], sessionID: Long): void
+    +sendMessage(version: int, code: int, data: byte[]): void
+    +sendMessage(version: int, code: int, text: String): void
+    +sendBigMessage(version: int, code: int, data: byte[], sessionID: Long): void
+    +sendBigMessage(version: int, code: int, data: byte[]): void
+    +readBigMessage(): MessageTCP
+    +readMessage(): MessageTCP
+}
+class MessageTCP{
+    -version: int
+    -code: int
+    -d_length_1: int
+    -d_length_2: int
+    -sessionID: Long
+    -data: byte[]
+}
+
+class MessageCodesTCP{
+    -ACK: int
+    -ERR: int
+    -BOARDS_WRITE: int
+    -CHANGE_POSTIT: int
+    -MOVE_POSTIT: int
+    -DELETE_POSTIT: int
+    -LOGOUT: int
+}
+}
+
+CreatePostItUI ..> CreatePostItTCPController
+CreatePostItUI ..> Content
+
+CreatePostItController ..> PersistenceContext
+CreatePostItController ..> RepositoryFactory
+CreatePostItController ..> BoardSharedRepository
+CreatePostItController ..> BoardRepository
+CreatePostItController ..> Board
+CreatePostItController ..> BoardShared
+CreatePostItController ..> PostIt
+CreatePostItController ..> EventPublisher
+
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> BoardSharedRepository
+RepositoryFactory --> BoardRepository
+
+BoardRepository --> Board
+BoardSharedRepository --> BoardShared
+
+Board --> PostIt
+PostIt --> Content
+PostIt ..> EcourseUser
+
+EventPublisher ..> BoardUpdateEvent
+
+CreatePostItTCPController ..> MessageFormatTCP
+CreatePostItTCPController ..> MessageCodesTCP
+CreatePostItTCPController ..> MessageTCP
+
+TcpSharedBoardServerThread ..> MessageFormatTCP
+TcpSharedBoardServerThread ..> MessageCodesTCP
+TcpSharedBoardServerThread ..> MessageTCP
+TcpSharedBoardServerThread ..> CreatePostItServerTCPController
+
+CreatePostItServerTCPController ..> CreatePostItController
+CreatePostItServerTCPController ..> Board
+
+@enduml

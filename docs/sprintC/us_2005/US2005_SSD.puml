@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Student" as ST
+
+activate ST
+ST -> ":System" : selects option "List Grades"
+activate ":System"
+":System" --> ST : shows list of grades
+deactivate ":System"
+deactivate ST
+
+@enduml

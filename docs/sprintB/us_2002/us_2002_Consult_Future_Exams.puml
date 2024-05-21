@@ -1,0 +1,68 @@
+@startuml
+title List Future Exams
+autonumber
+
+actor Student as user
+
+participant ListFutureExamsUI as UI  <<presentation>>
+participant ListFutureExamsController as Controller <<application>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory <<factory>>
+database StudentRepository <<repository>>
+database CourseRepository <<repository>>
+participant Student <<domain>>
+
+database ExamRepository <<repository>>
+database CourseEnrollmentRepository <<repository>>
+
+user --> UI : selects option "List Future Exams"
+activate UI
+UI -> Controller : create()
+activate Controller
+
+Controller -> Context : repositories()
+activate Context
+Context --> Controller : RepositoryFactory
+deactivate Context
+Controller -> RepositoryFactory : students()
+activate RepositoryFactory
+RepositoryFactory --> Controller : StudentRepository
+deactivate RepositoryFactory
+Controller -> RepositoryFactory : exams()
+activate RepositoryFactory
+RepositoryFactory --> Controller : ExamRepository
+deactivate RepositoryFactory
+Controller -> RepositoryFactory : courseEnrollments()
+activate RepositoryFactory
+RepositoryFactory --> Controller : CourseEnrollmentRepository
+deactivate RepositoryFactory
+deactivate Controller
+
+UI -> Controller : findStudentCourses()
+activate Controller
+Controller -> StudentRepository : findById()
+activate StudentRepository
+StudentRepository --> Controller : student
+deactivate StudentRepository
+Controller -> CourseEnrollmentRepository : findAcceptedApplicationByStudent(student)
+activate CourseEnrollmentRepository
+CourseEnrollmentRepository --> Controller : Iterable<CourseEnrollments>
+deactivate CourseEnrollmentRepository
+loop for each courseEnrollment
+    Controller -> CourseRepository : findById(courseEnrollment.courseId)
+    activate CourseRepository
+    CourseRepository --> Controller : course
+    deactivate CourseRepository
+
+    Controller -> ExamRepository : findByCourse(course)
+    activate ExamRepository
+    ExamRepository --> Controller : Iterable<Exams>
+    deactivate ExamRepository
+
+    Controller --> UI : Iterable<Exams>
+end loop
+deactivate Controller
+UI --> user : List exams for that student
+deactivate UI
+
+@enduml

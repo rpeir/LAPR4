@@ -1,0 +1,79 @@
+@startuml
+autonumber
+title SD - List Course Exam Grades
+
+actor Teacher as TC
+participant ListExamGradesUI as UI <<presentation>>
+participant ListExamGradesController as CTRL <<application>>
+participant ListExamsService as gradesService <<service>>
+database CourseRepository as repoCourse <<database>>
+participant Course as course <<domain>>
+database StudentRepository as repoStudent <<database>>
+participant Student as student <<domain>>
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory as Factory <<factory>>
+participant Exam as exam <<domain>>
+participant ExamRepository as repoExam <<database>>
+participant ExamExecution as examExecution <<domain>>
+participant ExamExecutionRepository as repoExamExecution <<database>>
+
+activate TC
+TC -> UI : selects option "List Course Grades"
+activate UI
+UI -> CTRL: create()
+activate CTRL
+CTRL -> Context: repositories()
+activate Context
+Context --> CTRL: RepositoryFactory
+deactivate Context
+CTRL -> Factory: examExecutions()
+activate Factory
+Factory --> CTRL: ExamExecutionRepository
+deactivate Factory
+CTRL -> Factory: exams()
+activate Factory
+Factory --> CTRL: ExamRepository
+deactivate Factory
+CTRL -> Factory: courses()
+activate Factory
+Factory --> CTRL: CourseRepository
+deactivate Factory
+CTRL -> Factory: enrollments()
+activate Factory
+Factory --> CTRL: EnrollmentRepository
+deactivate Factory
+CTRL -> Factory: students()
+activate Factory
+Factory --> CTRL: StudentRepository
+deactivate Factory
+note right of CTRL: user is authenticated (authz)
+CTRL -> gradesService: create(authz, courseEnrollments, exams)
+deactivate CTRL
+UI -> CTRL: findByTeacher()
+activate CTRL
+CTRL -> repoCourse: findByTeacher(teacherId)
+activate repoCourse
+repoCourse --> CTRL : Iterable<Course> teacherCourses
+deactivate repoCourse
+CTRL --> UI: Iterable<Course> teacherCourses
+deactivate CTRL
+UI --> TC : shows list of courses the teacher is teaching
+TC -> UI : selects a course
+UI -> CTRL : findByCourse()
+activate CTRL
+CTRL -> gradesService : findByCourse(course)
+activate gradesService
+gradesService -> repoExamExecution : findByCourse(courseId)
+activate repoExamExecution
+repoExamExecution --> gradesService : Iterable<ExamExecution> examExecutions
+deactivate repoExamExecution
+gradesService --> CTRL : Iterable<ExamExecution> examExecutions
+deactivate gradesService
+CTRL --> UI : Iterable<ExamExecution> examExecutions
+deactivate CTRL
+UI --> TC : shows list of students in the course and their exam grades
+deactivate UI
+deactivate TC
+
+
+@enduml

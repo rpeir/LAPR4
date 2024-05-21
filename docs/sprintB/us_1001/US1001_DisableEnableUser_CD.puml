@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/class-diagram
+title Enable system user
+top to bottom direction
+skinparam linetype ortho
+
+
+
+package repositories {
+    interface UserRepository{
+        + deactivatedUsers(): Iterable<SystemUser>
+    }
+}
+
+package infraestructure.persistence {
+    class PersistenceContext {
+    + repositories : RepositoryFactory
+    }
+
+    interface RepositoryFactory {
+        + systemUsers() : UserRepository
+    }
+}
+
+class EnableSystemUserUI <<presentation>>
+
+class EnableSystemUserController <<application>> {
+    + listSystemUser() : Iterable<SystemUser>
+    + enableSystemUser(systemUser) : void
+}
+class UserManagementService <<service>> {
+    + deactivatedUsers(): Iterable<SystemUser>
+}
+
+EnableSystemUserUI ..> EnableSystemUserController
+EnableSystemUserController ..> PersistenceContext
+EnableSystemUserController ..> RepositoryFactory
+EnableSystemUserController ..> UserRepository
+EnableSystemUserController ..> UserManagementService
+UserManagementService ..> UserRepository
+UserManagementService ..> SystemUser.SystemUser
+PersistenceContext --> RepositoryFactory
+RepositoryFactory --> UserRepository
+UserRepository --> SystemUser.SystemUser
+
+
+@enduml

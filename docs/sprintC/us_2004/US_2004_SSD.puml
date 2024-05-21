@@ -1,0 +1,20 @@
+@startuml
+title User Exam Interaction
+
+actor User
+participant System
+autonumber
+
+User -> System: Select Take Exam option
+System --> User: Display Available Exams
+User -> System: Select Exam
+
+loop for each question of the exam
+System --> User: Display question
+User -> System: Provide Answer
+end loop
+
+User -> System: Finish Exam
+System --> User: Calculate Final Grade
+System --> User: Display Feedback
+@enduml

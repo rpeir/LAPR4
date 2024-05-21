@@ -1,0 +1,35 @@
+@startuml
+autonumber
+skinparam handwritten true
+skinparam monochrome true
+actor "User" as US
+Title : Create PostIt -
+
+activate US
+US -> ":System" : selects option "Create PostIt"
+activate ":System"
+":System" --> US : shows the list of Boards that the User can write on
+deactivate ":System"
+US -> ":System" : selects the Board to create the PostIt
+activate ":System"
+":System" --> US : ask to insert the line the user intent to create
+deactivate ":System"
+US -> ":System" : inputs the line
+activate ":System"
+":System" --> US : ask to insert the column the user intent to create
+deactivate ":System"
+US -> ":System" : inputs the column
+activate ":System"
+":System" --> US : shows list of type of content
+deactivate ":System"
+US -> ":System" : selects the type of content
+activate ":System"
+":System" --> US : asks for content
+deactivate ":System"
+US -> ":System" : inputs content
+activate ":System"
+":System" --> US : shows the confirmation message
+deactivate ":System"
+deactivate US
+
+@enduml

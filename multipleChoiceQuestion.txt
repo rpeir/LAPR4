@@ -1,0 +1,11 @@
+
+Theme: English
+What items would you like us to have more on offer?
+Type: Multiple-Choice
+a)Clothing
+b)Cosmetic
+c)Home appliances
+d)House and Garden and decoration
+e)Books and Stationery
+
+Solution: a,c

@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+title SD - Set Enrollment state in Course
+actor Manager as MG
+participant ":SetEnrollmentStateUI" as UI <<presentation>>
+participant ":SetEnrollmentStateController" as CTRL <<application>>
+
+participant ":Course" as course
+participant PersistenceContext as Context <<persistence>>
+participant RepositoryFactory <<factory>>
+database CourseRepository <<repository>>
+
+activate MG
+MG -> UI: selects option "Open/Close Enrollments in Course"
+activate UI
+UI -> CTRL: create()
+activate CTRL
+CTRL -> Context : repositories()
+activate Context
+Context --> CTRL : RepositoryFactory
+deactivate Context
+CTRL -> RepositoryFactory : courses()
+activate RepositoryFactory
+RepositoryFactory --> CTRL : CourseRepository
+deactivate RepositoryFactory
+
+CTRL --> UI: courses
+deactivate CTRL
+UI --> MG: shows courses
+MG -> UI:selects course
+
+deactivate CTRL
+UI --> MG: shows possible options (open or close enrollments)
+MG -> UI:selects option (state)
+UI -> CTRL: changeEnrollmentState(state, course)
+activate CTRL
+CTRL -> course: changeEnrollmentState(state)
+activate course
+course --> CTRL
+deactivate course
+CTRL -> CourseRepository: saveCourse(course)
+activate CourseRepository
+CourseRepository --> CTRL
+deactivate CourseRepository
+CTRL --> UI:
+deactivate CTRL
+UI --> MG: informs operation success
+deactivate UI
+deactivate MG
+@enduml

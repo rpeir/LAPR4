@@ -1,0 +1,56 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+title SD - Set Teachers to a Course
+actor Manager as manager
+participant ":SetTeachersUI" as ui
+participant ":SetTeacherController" as ctrl
+participant ":ListCourseService" as svcCourse
+participant ":ListTeacherService" as svcTeacher
+database ":CourseRepository" as repoCourse
+database ":TeacherRepository" as repoTeacher
+participant ":Course" as course
+
+activate manager
+   manager -> ui: select set teacher option
+    activate ui
+        ui -> ctrl: availableCourses()
+        activate ctrl
+            ctrl -> svcCourse: availableCourses()
+            activate svcCourse
+                svcCourse -> repoCourse: availableCourses()
+                activate repoCourse
+                    repoCourse --> svcCourse:courses that are Available
+                deactivate repoCourse
+                svcCourse --> ctrl: courses that are available
+            deactivate svcCourse
+            ctrl --> ui:courses that are available
+        deactivate ctrl
+        ui -> ui: output Courses
+        ui --> manager: ask user to select a Course
+        manager --> ui:select Course
+
+        ui -> ctrl: availableTeachers()
+        activate ctrl
+            ctrl -> svcTeacher: availableTeachers()
+            activate svcTeacher
+                    svcTeacher -> repoTeacher: availableTeachers()
+                activate repoTeacher
+                            repoTeacher --> svcTeacher:teachers that are Available
+                deactivate repoTeacher
+                svcTeacher --> ctrl: Teachers that are available
+            deactivate svcTeacher
+            ctrl --> ui:Teachers that are available
+        deactivate ctrl
+        ui -> ui: output Teachers
+        ui --> manager: ask user to select Teachers
+        ui -> ctrl: addTeachers(course,teachersSet)
+        activate ctrl
+            ctrl -> course: addTeachers(teachers)
+            ctrl -> repoCourse: save(course)
+        deactivate ctrl
+        ui --> manager: back to menu
+    deactivate ui
+deactivate manager
+@enduml

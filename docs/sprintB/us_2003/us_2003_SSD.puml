@@ -1,0 +1,13 @@
+@startuml
+
+autonumber
+
+actor Teacher
+participant System
+
+Teacher --> System : Request exams of a course
+System --> Teacher : Ask teacher's course
+Teacher --> System : Select course
+System --> Teacher : List exams of the course
+
+@enduml

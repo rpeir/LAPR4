@@ -1,0 +1,40 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+title SD - Open Course
+actor Manager as manager
+participant ":OpenCourseUI" as ui
+participant ":OpenCourseController" as ctrl
+participant ":ListCourseService" as svc
+database ":CourseRepository" as repo
+participant ":Course" as course
+
+activate manager
+   manager -> ui: select open course option
+    activate ui
+        ui -> ctrl: listCloseCourses()
+        activate ctrl
+            ctrl -> svc: openCourses()
+            activate svc
+                svc -> repo: openCourses()
+                activate repo
+                    repo --> svc:courses that are closed
+                deactivate repo
+                svc --> ctrl: courses that are closed
+            deactivate svc
+            ctrl --> ui:courses that are closed
+        deactivate ctrl
+        ui -> ui: output Courses
+        ui --> manager: ask user to select a Course
+        manager --> ui:select Course
+
+        ui -> ctrl: openCourse(course)
+        activate ctrl
+            ctrl -> course: openCourse()
+            ctrl -> repo: save(course)
+        deactivate ctrl
+        ui --> manager: back to menu
+    deactivate ui
+deactivate manager
+@enduml
